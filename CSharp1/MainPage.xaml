@@ -1,0 +1,42 @@
+﻿<Page
+    x:Class="CSharp1.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:CSharp1"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid Margin="20,0,0,0">
+        <controls:UniformGrid x:Name="ButtonsUniformGrid" Orientation="Horizontal"  Columns="16" Rows="4" Margin="10,10,230,558" ColumnSpacing="4" RowSpacing="4">
+            <!--<controls:UniformGrid x:Name="ButtonsUniformGrid" Columns="16" Rows="4"/>-->
+
+        <Border Background="AliceBlue">
+                <TextBlock Text="1"/>
+            </Border>
+            <Border Background="Cornsilk">
+                <TextBlock Text="2"/>
+            </Border>
+            <Border Background="DarkSalmon">
+                <TextBlock Text="3"/>
+            </Border>
+            <Border Background="Gainsboro">
+                <CheckBox Content="CheckBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+            </Border>
+            <Border Background="LightBlue">
+                <ToggleButton Content="ToggleButton" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsThreeState="True"/>
+            </Border>
+            <Border Background="MediumAquamarine">
+                <TextBlock Text="6"/>
+            </Border>
+            <Border Background="MidnightBlue">
+                <Button Content="Button" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+            </Border>
+        </controls:UniformGrid>
+        <Button Content="Button" Margin="125,676,0,0" VerticalAlignment="Top" Height="120" Width="198" Click="Button_Click_1"/>
+
+
+    </Grid>
+</Page>
