@@ -60,82 +60,19 @@ namespace CSharp1
 
                 //****
                 channelSel[i] = new ToggleButton();
+                channelSel[i].HorizontalAlignment = HorizontalAlignment.Stretch;
+                channelSel[i].VerticalAlignment = VerticalAlignment.Stretch;
                 channelSel[i].Checked += HandleChannelSelChecked;
                 channelSel[i].Unchecked += HandleChannelSelUnChecked;
                 channelSel[i].Tag = i;
 
 
                 ButtonsUniformGrid_Copy.Children.Add(channelSel[i]);
-
+                
             }
             room[0].uniformGrid1.Visibility = Visibility.Visible;
             room[0].uniformGrid2.Visibility = Visibility.Visible;
-            //    Slider slider1 = new Slider();
-            //my.Children.Add(slider1);
-            //thegrid.Children.Add(my);
-            //thegrid.Children.Add(my1);
-            //Grid.SetColumn(my, 0);
-            //Grid.SetRow(my, 0);
-            //my.Visibility = Visibility.Collapsed;
-            //MyToggle[,] bu = new MyToggle[5, 16];
-            //Slider[] slider = new Slider[3];
-            //for (int i = 0; i < 5; i++)
-            //    for (int j = 0; j < 16; j++)
-            //    {
-            //        {
-            //            // Border border = new Border();
-            //            // border.Background = new SolidColorBrush(Windows.UI.Colors.White);
-            //           // ToggleButton[,] bu = new ToggleButton[5,16];
-
-            //            //bu[i,j]= new ToggleButton();
-            //            bu[i,j]= new MyToggle();
-            //            //bu[i, j].Background = new SolidColorBrush(Windows.UI.Colors.DarkBlue);
-            //            // bu[i, j].Content = "T";
-            //            bu[i, j].Click += HandleButtonClick;
-            //            bu[i, j].Checked += HandleToggleButtonChecked;
-            //            bu[i, j].Unchecked += HandleToggleButtonUnChecked;
-
-            //            bool isOver= bu[i, j].IsPointerOver;
-            //           // bu[i,j].Resources.
-            //           clientDict.Add(bu[i, j], new Tuple<int, int>(i,j));
-            //            bu[i, j].HorizontalAlignment = HorizontalAlignment.Stretch;
-            //            bu[i, j].VerticalAlignment = VerticalAlignment.Stretch;
-            //            bu[i, j].IsThreeState = false;
-
-            //            // ToggleButton b = new ToggleButton(); 
-            //            // b.Background = new SolidColorBrush(Windows.UI.Colors.DarkBlue);
-            //            // b.Content = "T";
-            //            //// b.Click += Button_Click;
-            //            // b.Click += HandleButtonClick;
-            //            // //clientDict.Add(b, (j+1)*(i+1));
-
-            //            // b.HorizontalAlignment = HorizontalAlignment.Stretch;
-            //            // b.VerticalAlignment = VerticalAlignment.Stretch;
-            //            // b.IsThreeState = true;
-
-            //            //  ButtonsUniformGrid.Children.Add(border);
-            //            ButtonsUniformGrid.Children.Add(bu[i,j]);
-            //          //  ButtonsUniformGrid1.Children.Add(bu[i,j]);
-            //        }
-            //    }
-            //bu[1, 1].state = 1;
-            //bu[1, 1].update();
-
-            //for (int i = 0; i < 3; i++)
-            //{
-            //    slider[i] = new Slider();
-            //    slider[i].Header = "Volume";
-            //    slider[i].Width = 600;
-            //   // slider[i].Height = 1000;
-            //    sliderclientDict.Add(slider[i],i);
-            //    slider[i].Orientation = Orientation.Vertical;
-            //    slider[i].HorizontalAlignment = HorizontalAlignment.Stretch;
-            //    slider[i].VerticalAlignment = VerticalAlignment.Stretch;
-
-            //    slider[i].ValueChanged += Slider_ValueChanged;
-            //    ButtonsUniformGrid_Copy1.Children.Add(slider[i]);
-            //}
-
+          
         }  // public MAINPAGE
 
         private void HandleChannelSelUnChecked(object sender, RoutedEventArgs e)
@@ -146,15 +83,21 @@ namespace CSharp1
         private void HandleChannelSelChecked(object sender, RoutedEventArgs e)
         {
             ToggleButton toggle = sender as ToggleButton;
+            int m = (int)toggle.Tag;
             for (int i = 0; i < numchannels; i++)
             {
-                room[i].uniformGrid1.Visibility = Visibility.Collapsed;
-                //   throw new NotImplementedException();
-                channelSel[i].IsChecked = false;
+                if (i != m)
+                {
+                    room[i].uniformGrid1.Visibility = Visibility.Collapsed;
+                    room[i].uniformGrid2.Visibility = Visibility.Collapsed;
+                    //   throw new NotImplementedException();
+                    channelSel[i].IsChecked = false;
+                }
             }
-            int m = (int) toggle.Tag;
+           
             //channelSel[m].IsChecked = true;
             room[m].uniformGrid1.Visibility = Visibility.Visible;
+            room[m].uniformGrid2.Visibility = Visibility.Visible;
         }
 
         private void Slider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)

@@ -25,8 +25,8 @@
         </controls:UniformGrid>
       
 
-        <controls:UniformGrid x:Name="ButtonsUniformGrid_Copy"  Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="1"  Orientation="Horizontal"  Columns="6" Rows="2"  ColumnSpacing="4" RowSpacing="4">
-            <Button Content="Button" Click="Button_Click_1"/>
+        <controls:UniformGrid x:Name="ButtonsUniformGrid_Copy"  Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="1"  Orientation="Horizontal"  Columns="10" Rows="4"  ColumnSpacing="4" RowSpacing="4" Margin="0,50,0,0">
+            <!--<Button Content="Button" Click="Button_Click_1"/>-->
         </controls:UniformGrid>
 
         <controls:UniformGrid x:Name="ButtonsUniformGrid_Copy1"  Grid.Row="0" Grid.Column="1" Grid.RowSpan="2"  Orientation="Horizontal"  Columns="3" Rows="1"  ColumnSpacing="4" RowSpacing="4">
