@@ -9,34 +9,34 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid Margin="20,0,0,0">
-        <controls:UniformGrid x:Name="ButtonsUniformGrid" Orientation="Horizontal"  Columns="16" Rows="4" Margin="10,10,230,558" ColumnSpacing="4" RowSpacing="4">
-            <!--<controls:UniformGrid x:Name="ButtonsUniformGrid" Columns="16" Rows="4"/>-->
+    <Grid x:Name="thegrid" Margin="0,0,0,0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="6*"/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="3*"/>
+            <RowDefinition Height="2*"/>
+        </Grid.RowDefinitions>
 
-        <Border Background="AliceBlue">
-                <TextBlock Text="1"/>
-            </Border>
-            <Border Background="Cornsilk">
-                <TextBlock Text="2"/>
-            </Border>
-            <Border Background="DarkSalmon">
-                <TextBlock Text="3"/>
-            </Border>
-            <Border Background="Gainsboro">
-                <CheckBox Content="CheckBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-            </Border>
-            <Border Background="LightBlue">
-                <ToggleButton Content="ToggleButton" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsThreeState="True"/>
-            </Border>
-            <Border Background="MediumAquamarine">
-                <TextBlock Text="6"/>
-            </Border>
-            <Border Background="MidnightBlue">
-                <Button Content="Button" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-            </Border>
+
+
+        <controls:UniformGrid x:Name="ButtonsUniformGrid"  Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1"  Orientation="Horizontal"  Columns="16" Rows="5"  ColumnSpacing="4" RowSpacing="4">
         </controls:UniformGrid>
-        <Button Content="Button" Margin="125,676,0,0" VerticalAlignment="Top" Height="120" Width="198" Click="Button_Click_1"/>
+      
 
+        <controls:UniformGrid x:Name="ButtonsUniformGrid_Copy"  Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="1"  Orientation="Horizontal"  Columns="6" Rows="2"  ColumnSpacing="4" RowSpacing="4">
+            <Button Content="Button" Click="Button_Click_1"/>
+        </controls:UniformGrid>
+
+        <controls:UniformGrid x:Name="ButtonsUniformGrid_Copy1"  Grid.Row="0" Grid.Column="1" Grid.RowSpan="2"  Orientation="Horizontal"  Columns="3" Rows="1"  ColumnSpacing="4" RowSpacing="4">
+           
+        </controls:UniformGrid>
 
     </Grid>
+
+
+
+
+
 </Page>
