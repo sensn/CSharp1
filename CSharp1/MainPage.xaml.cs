@@ -16,8 +16,18 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using System.Windows;
 using Microsoft.Toolkit.Uwp.UI.Controls;
+using Windows.UI.Xaml.Shapes;
+using Windows.ApplicationModel.Background;
+using System;
+using System.Threading;
+using Windows.UI.Core;
 
-    // Die Elementvorlage "Leere Seite" wird unter https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x407 dokumentiert.
+//***FÜR MIDI
+using Windows.Devices.Enumeration;
+using Windows.Devices.Midi;
+using System.Threading.Tasks;
+
+// Die Elementvorlage "Leere Seite" wird unter https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x407 dokumentiert.
 
 namespace CSharp1
 {
@@ -26,6 +36,8 @@ namespace CSharp1
     /// </summary>
     public sealed partial class MainPage : Page
     {
+       
+
         public const int numchannels = 10;
         public bool vis = true;
         public Dictionary<ToggleButton, Tuple<int,int>> clientDict = new Dictionary<ToggleButton, Tuple<int,int>>();
@@ -36,12 +48,57 @@ namespace CSharp1
 
         public Room[] room = new Room[10];
         public ToggleButton[] channelSel = new ToggleButton[10];
+        public ToggleButton[] saveSlot = new ToggleButton[10];
+        public ToggleButton[] loadSlot = new ToggleButton[10];
+        public Button[] prgButton = new Button[2];
+        public Button[] bnkButton = new Button[2];
+        public static Rectangle[] led = new Rectangle[16];
+
+        public Worker playsequence;
+
+
+        MyMidiDeviceWatcher inputDeviceWatcher;
+        MyMidiDeviceWatcher outputDeviceWatcher;
+
+        MidiInPort midiInPort;
+        IMidiOutPort midiOutPort;
         public MainPage()
         {
-             
+           
+
             this.InitializeComponent();
             
-           Debug.WriteLine("Servas Wöd, I brauch a göd!");
+
+
+           Debug.WriteLine("Servas Wöd, I brauch a göd! CREATE TASK");
+
+            //****MIDI
+            inputDeviceWatcher =
+              new MyMidiDeviceWatcher(MidiInPort.GetDeviceSelector(), midiInPortListBox, Dispatcher);
+
+            inputDeviceWatcher.StartWatcher();
+
+            outputDeviceWatcher =
+                new MyMidiDeviceWatcher(MidiOutPort.GetDeviceSelector(), midiOutPortListBox, Dispatcher);
+
+            outputDeviceWatcher.StartWatcher();
+
+            //*****MIDI END
+
+
+
+            //System.Threading.Tasks.Task task1 = new Task(DoSomething);
+            //task1.Start();
+            //task1.Factory.StartNew(DoSomething);
+
+            // Creating object of ExThread class 
+            playsequence = new Worker();
+
+            // Creating thread 
+            // Using thread class 
+            Thread thr = new Thread(new ThreadStart(playsequence.mythread1));
+            thr.Start();
+
             ButtonsUniformGrid.Visibility = Visibility.Visible;
             ButtonsUniformGrid_Copy.Orientation = Orientation.Horizontal;
             ButtonsUniformGrid_Copy.Columns = 16;
@@ -53,9 +110,9 @@ namespace CSharp1
                 thegrid.Children.Add(room[i].uniformGrid2);
               
                 Grid.SetColumn(room[i].uniformGrid1, 0);     //ToggleButtonMatrix
-                   Grid.SetRow(room[i].uniformGrid1, 0);
+                   Grid.SetRow(room[i].uniformGrid1, 1);
                 Grid.SetColumn(room[i].uniformGrid2, 1);     //Sliders
-                   Grid.SetRow(room[i].uniformGrid2, 0);
+                   Grid.SetRow(room[i].uniformGrid2, 1);
                 //  Grid.SetRowSpan(room[i].uniformGrid2, 2);    //Slider Stretch Vertically
 
                 //****
@@ -67,13 +124,208 @@ namespace CSharp1
                 channelSel[i].Tag = i;
 
 
-                ButtonsUniformGrid_Copy.Children.Add(channelSel[i]);
-                
+                ButtonsUniformGrid_Copy.Children.Add(channelSel[i]);     
             }
+
+            
+                 for (int i = 0; i < 16; i++)
+            {
+                 led[i] = new Rectangle();
+                led[i].Fill = new SolidColorBrush(Windows.UI.Colors.Black);  //SAPCER
+                LedUniformGrid.Children.Add(led[i]);
+            }
+            led[3].Fill = new SolidColorBrush(Windows.UI.Colors.DarkRed);  //SAPCER
+
+
+            for (int i = 0; i < 2; i++)
+            {
+                Border myspacer1 = new Border();
+                myspacer1.Background = new SolidColorBrush(Windows.UI.Colors.Black);  //SAPCER
+                ButtonsUniformGrid_Copy.Children.Add(myspacer1);
+            }
+            for (int i = 0; i < 2; i++)
+            {
+                prgButton[i] = new Button();
+                prgButton[i].HorizontalAlignment = HorizontalAlignment.Stretch;
+                prgButton[i].VerticalAlignment = VerticalAlignment.Stretch;
+                prgButton[i].Click += HandleprgButtonClicked;
+                //   saveSlot[i].Unchecked += HandleChannelSelUnChecked;
+               prgButton[i].Tag = i;
+                ButtonsUniformGrid_Copy.Children.Add(prgButton[i]);
+            }
+         
+            Border myspacer2 = new Border();
+            myspacer2.Background = new SolidColorBrush(Windows.UI.Colors.Black);  //SAPCER
+            ButtonsUniformGrid_Copy.Children.Add(myspacer2);
+
+            ToggleButton playbutton = new ToggleButton();
+            playbutton.HorizontalAlignment = HorizontalAlignment.Stretch;
+            playbutton.VerticalAlignment = VerticalAlignment.Stretch;
+            playbutton.Click += HandleplayButtonClicked;
+            ButtonsUniformGrid_Copy.Children.Add(playbutton);
+            for (int i = 0; i < 12; i++)
+            {
+                Border myspacer1 = new Border();
+                myspacer1.Background = new SolidColorBrush(Windows.UI.Colors.Black);  //SAPCER
+                ButtonsUniformGrid_Copy.Children.Add(myspacer1);
+            }
+            for (int i = 0; i < 2; i++)
+            {
+                bnkButton[i] = new Button();
+                bnkButton[i].HorizontalAlignment = HorizontalAlignment.Stretch;
+                bnkButton[i].VerticalAlignment = VerticalAlignment.Stretch;
+                bnkButton[i].Click += HandlebnkButtonClicked;
+                //   saveSlot[i].Unchecked += HandleChannelSelUnChecked;
+                bnkButton[i].Tag = i;
+                ButtonsUniformGrid_Copy.Children.Add(bnkButton[i]);
+            }
+
+
+            Button savePattern = new Button();
+                savePattern.HorizontalAlignment = HorizontalAlignment.Stretch;
+                savePattern.VerticalAlignment = VerticalAlignment.Stretch;
+                savePattern.Click += HandlesavePatternChecked;
+                //savePattern.Unchecked += HandleChannelSelUnChecked;
+            ButtonsUniformGrid_Copy1.Children.Add(savePattern);
+
+            Border myspacer = new Border();
+            myspacer.Background = new SolidColorBrush(Windows.UI.Colors.Black);  //SAPCER
+            ButtonsUniformGrid_Copy1.Children.Add(myspacer);
+
+            for (int i = 0; i < numchannels; i++)
+            {
+                saveSlot[i] = new ToggleButton();
+                saveSlot[i].HorizontalAlignment = HorizontalAlignment.Stretch;
+                saveSlot[i].VerticalAlignment = VerticalAlignment.Stretch;
+                saveSlot[i].Checked += HandlesaveSlotChecked;
+             //   saveSlot[i].Unchecked += HandleChannelSelUnChecked;
+                saveSlot[i].Tag = i;
+                ButtonsUniformGrid_Copy1.Children.Add(saveSlot[i]);
+            }
+
+            for (int i = 0; i < 3; i++)
+            {
+                Border myspacer1 = new Border();
+                myspacer1.Background = new SolidColorBrush(Windows.UI.Colors.Black);  //SAPCER
+                ButtonsUniformGrid_Copy1.Children.Add(myspacer1);
+            }
+            Button saveTODBButton = new Button();
+            saveTODBButton.HorizontalAlignment = HorizontalAlignment.Stretch;
+            saveTODBButton.VerticalAlignment = VerticalAlignment.Stretch;
+            saveTODBButton.Click += HandlesaveTODBButtonClick;
+            //saveTODBButton.Unchecked += HandleChannelSelUnChecked;
+            ButtonsUniformGrid_Copy1.Children.Add(saveTODBButton);
+
+            for (int i = 0; i < 2; i++)
+            {
+                Border myspacer1 = new Border();
+                myspacer1.Background = new SolidColorBrush(Windows.UI.Colors.Black);  //SAPCER
+                ButtonsUniformGrid_Copy1.Children.Add(myspacer1);
+            }
+
+            for (int i = 0; i < numchannels; i++)
+            {
+                loadSlot[i] = new ToggleButton();
+                loadSlot[i].HorizontalAlignment = HorizontalAlignment.Stretch;
+                loadSlot[i].VerticalAlignment = VerticalAlignment.Stretch;
+                loadSlot[i].Checked += HandleloadSlotChecked;
+             //   loadSlot[i].Unchecked += HandleChannelSelUnChecked;
+                loadSlot[i].Tag = i;
+                ButtonsUniformGrid_Copy1.Children.Add(loadSlot[i]);
+            }
+
+            for (int i = 0; i < 3; i++)
+            {
+                Border myspacer1 = new Border();
+                myspacer1.Background = new SolidColorBrush(Windows.UI.Colors.Black);  //SAPCER
+                ButtonsUniformGrid_Copy1.Children.Add(myspacer1);
+            }
+            Button loadFromDBButton = new Button();
+            loadFromDBButton.HorizontalAlignment = HorizontalAlignment.Stretch;
+            loadFromDBButton.VerticalAlignment = VerticalAlignment.Stretch;
+            loadFromDBButton.Click += HandleloadFromDBButtonChecked;
+            //loadFromDBButton.Unchecked += HandleChannelSelUnChecked;
+            ButtonsUniformGrid_Copy1.Children.Add(loadFromDBButton);
+
+
+
             room[0].uniformGrid1.Visibility = Visibility.Visible;
             room[0].uniformGrid2.Visibility = Visibility.Visible;
           
         }  // public MAINPAGE
+
+        private void HandleprgButtonClicked(object sender, RoutedEventArgs e)
+        {
+           // throw new NotImplementedException();
+        }
+
+        private void HandlesaveSlotChecked(object sender, RoutedEventArgs e)
+        {
+            ToggleButton toggle = sender as ToggleButton;
+            int m = (int)toggle.Tag;
+            for (int i = 0; i < numchannels; i++)
+            {
+                if (i != m)
+                {
+
+
+                    saveSlot[i].IsChecked = false;
+                }
+            }
+        }
+
+        private void HandleloadFromDBButtonChecked(object sender, RoutedEventArgs e)
+        {
+          //  throw new NotImplementedException();
+        }
+
+        private void HandlesaveTODBButtonClick(object sender, RoutedEventArgs e)
+        {
+           // throw new NotImplementedException();
+        }
+
+        private void HandlebnkButtonClicked(object sender, RoutedEventArgs e)
+        {
+        //    throw new NotImplementedException();
+        }
+
+        private void HandleplayButtonClicked(object sender, RoutedEventArgs e)
+        {
+            //  throw new NotImplementedException();
+            Debug.WriteLine("111111111111111");
+            playsequence.isplaying = !playsequence.isplaying;
+            
+            //   DoSomething();
+            Debug.WriteLine("2222222222222");
+
+            byte channel = 0;
+            byte note = 60;
+            byte velocity = 127;
+            IMidiMessage midiMessageToSend = new MidiNoteOnMessage(channel, note, velocity);
+
+            midiOutPort.SendMessage(midiMessageToSend);
+        }
+
+        private void HandleloadSlotChecked(object sender, RoutedEventArgs e)
+        {
+            //  throw new NotImplementedException();
+            ToggleButton toggle = sender as ToggleButton;
+            int m = (int)toggle.Tag;
+            for (int i = 0; i < numchannels; i++)
+            {
+                if (i != m)
+                {
+                  
+                   
+                    loadSlot[i].IsChecked = false;
+                }
+            }
+        }
+
+        private void HandlesavePatternChecked(object sender, RoutedEventArgs e)
+        {
+        //    throw new NotImplementedException();
+        }
 
         private void HandleChannelSelUnChecked(object sender, RoutedEventArgs e)
         {
@@ -163,5 +415,153 @@ namespace CSharp1
            // if (vis != true) { my.Visibility = Visibility.Visible; } else { my.Visibility = Visibility.Collapsed; }
             if (vis != true) { room[0].uniformGrid1.Visibility = Visibility.Collapsed; } else { room[0].uniformGrid1.Visibility = Visibility.Visible; }
         }
+
+        public async  static void DoSomething(short step)
+        {
+
+
+
+          //  var frame = (Frame)Window.Current.Content;
+          //  var page = (MainPage)frame.Content;
+
+
+            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            {
+                //var frame = new Frame();
+                //frame.Navigate(typeof(Frame2));
+              //  Window.Current.Content = frame;
+            
+            for (short i = 0; i < 16; i++)
+            {
+                led[i].Fill = new SolidColorBrush(Windows.UI.Colors.Black);
+            }
+
+            led[step].Fill = new SolidColorBrush(Windows.UI.Colors.Red);
+
+            // System.Threading.Thread.Sleep(1000);
+            Debug.WriteLine("DA SRED, DA SERD, Na dA TASTk DA TASK, ER RENNT ER RENNNNNT!");
+            });
+        }
+
+
+        //***************UWP MIDI
+        private async Task EnumerateMidiInputDevices()
+        {
+            // Find all input MIDI devices
+            string midiInputQueryString = MidiInPort.GetDeviceSelector();
+            DeviceInformationCollection midiInputDevices = await DeviceInformation.FindAllAsync(midiInputQueryString);
+
+            midiInPortListBox.Items.Clear();
+
+            // Return if no external devices are connected
+            if (midiInputDevices.Count == 0)
+            {
+                this.midiInPortListBox.Items.Add("No MIDI input devices found!");
+                this.midiInPortListBox.IsEnabled = false;
+                return;
+            }
+
+            // Else, add each connected input device to the list
+            foreach (DeviceInformation deviceInfo in midiInputDevices)
+            {
+                this.midiInPortListBox.Items.Add(deviceInfo.Name);
+            }
+            this.midiInPortListBox.IsEnabled = true;
+        }
+
+
+        private async Task EnumerateMidiOutputDevices()
+        {
+
+            // Find all output MIDI devices
+            string midiOutportQueryString = MidiOutPort.GetDeviceSelector();
+            DeviceInformationCollection midiOutputDevices = await DeviceInformation.FindAllAsync(midiOutportQueryString);
+
+            midiOutPortListBox.Items.Clear();
+
+            // Return if no external devices are connected
+            if (midiOutputDevices.Count == 0)
+            {
+                this.midiOutPortListBox.Items.Add("No MIDI output devices found!");
+                this.midiOutPortListBox.IsEnabled = false;
+                return;
+            }
+
+            // Else, add each connected input device to the list
+            foreach (DeviceInformation deviceInfo in midiOutputDevices)
+            {
+                this.midiOutPortListBox.Items.Add(deviceInfo.Name);
+            }
+            this.midiOutPortListBox.IsEnabled = true;
+        }
+
+        private async void midiInPortListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var deviceInformationCollection = inputDeviceWatcher.DeviceInformationCollection;
+
+            if (deviceInformationCollection == null)
+            {
+                return;
+            }
+
+            DeviceInformation devInfo = deviceInformationCollection[midiInPortListBox.SelectedIndex];
+
+            if (devInfo == null)
+            {
+                return;
+            }
+
+            midiInPort = await MidiInPort.FromIdAsync(devInfo.Id);
+
+            if (midiInPort == null)
+            {
+                System.Diagnostics.Debug.WriteLine("Unable to create MidiInPort from input device");
+                return;
+            }
+            midiInPort.MessageReceived += MidiInPort_MessageReceived;
+        }
+
+        private void MidiInPort_MessageReceived(MidiInPort sender, MidiMessageReceivedEventArgs args)
+        {
+            IMidiMessage receivedMidiMessage = args.Message;
+
+            System.Diagnostics.Debug.WriteLine(receivedMidiMessage.Timestamp.ToString());
+
+            if (receivedMidiMessage.Type == MidiMessageType.NoteOn)
+            {
+                System.Diagnostics.Debug.WriteLine(((MidiNoteOnMessage)receivedMidiMessage).Channel);
+                System.Diagnostics.Debug.WriteLine(((MidiNoteOnMessage)receivedMidiMessage).Note);
+                System.Diagnostics.Debug.WriteLine(((MidiNoteOnMessage)receivedMidiMessage).Velocity);
+            }
+        }
+
+        private async void midiOutPortListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var deviceInformationCollection = outputDeviceWatcher.DeviceInformationCollection;
+
+            if (deviceInformationCollection == null)
+            {
+                return;
+            }
+
+            DeviceInformation devInfo = deviceInformationCollection[midiOutPortListBox.SelectedIndex];
+
+            if (devInfo == null)
+            {
+                return;
+            }
+
+            midiOutPort = await MidiOutPort.FromIdAsync(devInfo.Id);
+
+            if (midiOutPort == null)
+            {
+                System.Diagnostics.Debug.WriteLine("Unable to create MidiOutPort from output device");
+                return;
+            }
+
+        }
+
+
+
     }
 }

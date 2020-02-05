@@ -108,6 +108,8 @@ namespace CSharp1
             Debug.WriteLine("isChecked:" + toggle.IsChecked);
             Debug.WriteLine("State:" + toggle.state);
 
+            var client = clientDict[sender as ToggleButton];
+            Debug.WriteLine(client.Item1 + " " + client.Item2);
 
             //throw new NotImplementedException();
         }
@@ -123,6 +125,8 @@ namespace CSharp1
             Debug.WriteLine("isChecked:" + toggle.IsChecked);
             Debug.WriteLine("State:" + toggle.state);
 
+            var client = clientDict[sender as ToggleButton];
+            Debug.WriteLine(client.Item1 + " " + client.Item2);
             //  throw new NotImplementedException();
         }
     } //Class

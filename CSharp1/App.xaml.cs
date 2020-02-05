@@ -20,12 +20,15 @@ namespace CSharp1
     /// <summary>
     /// Stellt das anwendungsspezifische Verhalten bereit, um die Standardanwendungsklasse zu ergänzen.
     /// </summary>
+    /// 
     sealed partial class App : Application
     {
         /// <summary>
         /// Initialisiert das Singletonanwendungsobjekt. Dies ist die erste Zeile von erstelltem Code
         /// und daher das logische Äquivalent von main() bzw. WinMain().
         /// </summary>
+        public MainPage mp;
+        /// 
         public App()
         {
             this.InitializeComponent();
@@ -63,6 +66,7 @@ namespace CSharp1
             {
                 if (rootFrame.Content == null)
                 {
+                     mp = new MainPage();
                     // Wenn der Navigationsstapel nicht wiederhergestellt wird, zur ersten Seite navigieren
                     // und die neue Seite konfigurieren, indem die erforderlichen Informationen als Navigationsparameter
                     // übergeben werden
