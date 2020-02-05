@@ -71,7 +71,7 @@ namespace CSharp1
 
 
            Debug.WriteLine("Servas Wöd, I brauch a göd! CREATE TASK");
-
+           // DefaultLaunch();    //Launch a app from asociated filetype
             //****MIDI
             inputDeviceWatcher =
               new MyMidiDeviceWatcher(MidiInPort.GetDeviceSelector(), midiInPortListBox, Dispatcher);
@@ -561,7 +561,35 @@ namespace CSharp1
 
         }
 
+        ///*** LAUNCHER CLASS *** NON MIDI
+        ///
+      public  async void DefaultLaunch()
+        {
+            // Path to the file in the app package to launch
+             string imageFile =@"images\\myscript.cmd";
 
+            var file = await Windows.ApplicationModel.Package.Current.InstalledLocation.GetFileAsync(imageFile);
+
+            if (file != null)
+            {
+                // Launch the retrieved file
+                var success = await Windows.System.Launcher.LaunchFileAsync(file);
+
+                if (success)
+                {
+                    // File launched
+                }
+                else
+                {
+                    // File launch failed
+                }
+            }
+            else
+            {
+                Debug.WriteLine("NIXI FILE LAUNCH");
+                // Could not find file
+            }
+        }
 
     }
 }

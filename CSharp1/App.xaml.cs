@@ -66,7 +66,7 @@ namespace CSharp1
             {
                 if (rootFrame.Content == null)
                 {
-                     mp = new MainPage();
+                    // mp = new MainPage();
                     // Wenn der Navigationsstapel nicht wiederhergestellt wird, zur ersten Seite navigieren
                     // und die neue Seite konfigurieren, indem die erforderlichen Informationen als Navigationsparameter
                     // übergeben werden
