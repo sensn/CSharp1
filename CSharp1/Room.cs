@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Toolkit.Uwp.UI.Controls;
@@ -22,13 +23,61 @@ namespace CSharp1
 
         public MyToggle[,] bu = new MyToggle[5, 16];
         public Slider[] slider = new Slider[3];
+
+        // public Button[] prgButton = new Button[2];
+        // public Button[] bnkButton = new Button[2];
+
+        //
+       public  int channel;
+       public  int bank = 0;
+        public int prg = 0;
+        int tempo = 150;
+        public struct pattern
+        {
+           // public List<int> int_tempo;
+          
+            public List<int> vec_bs;
+            public List<int> int_vs;
+            public List<int> int_bnk;
+            public List<int> int_prg;
+            public List<int> int_sl2;
+        };
+        public pattern thepattern;
+       //  List<int> vec_bs;
        
-        
-        
         public Room()
         {
+            thepattern = new pattern();
+           // thepattern.vec_bs = new List<int>(10000);
+          // thepattern.vec_bs = new List<int>(5*16*10);
+           thepattern.vec_bs = new List<int>(5 * 16 * 10);
+           thepattern.int_bnk = new List<int>(10);
+           thepattern.int_prg = new List<int>(10);
+            
+            thepattern.int_vs = new List<int>(10);
+            thepattern.int_sl2 = new List<int>(10);
+            
+            
+            for (int i = 0; i < 10; i++)
+            {
+                thepattern.int_vs.Add(0);
+                thepattern.int_sl2.Add(0);
+                thepattern.int_bnk.Add(0);
+                thepattern.int_prg.Add(0);
 
-            uniformGrid1.Columns=16;
+            }
+
+                for (int i = 0; i < (5*16*10); i++)
+            {
+               // Debug.WriteLine("LOOP" + i);
+               thepattern.vec_bs.Add(0);
+              //  thepattern.vec_bs.Add(0);
+            }
+          
+
+
+
+            uniformGrid1.Columns = 16;
             uniformGrid1.Rows = 5;
             uniformGrid1.ColumnSpacing = 4;
             uniformGrid1.RowSpacing = 4;
@@ -36,7 +85,7 @@ namespace CSharp1
 
             uniformGrid2.Columns = 3;
             uniformGrid2.Rows = 1;
-         
+
             uniformGrid2.ColumnSpacing = 4;
             uniformGrid2.RowSpacing = 4;
             uniformGrid2.Orientation = Orientation.Horizontal;
@@ -52,12 +101,12 @@ namespace CSharp1
                         bu[i, j] = new MyToggle();
                         //bu[i, j].Background = new SolidColorBrush(Windows.UI.Colors.DarkBlue);
                         // bu[i, j].Content = "T";
-                     //   bu[i, j].Click += HandleButtonClick;
+                        //   bu[i, j].Click += HandleButtonClick;
                         bu[i, j].Checked += HandleToggleButtonChecked;
                         bu[i, j].Unchecked += HandleToggleButtonUnChecked;
-                       // bu[i, j].Tag = i;
+                        // bu[i, j].Tag = i;
                         //bool isOver = bu[i, j].IsPointerOver;
-                       
+
                         clientDict.Add(bu[i, j], new Tuple<int, int>(i, j));
                         bu[i, j].HorizontalAlignment = HorizontalAlignment.Stretch;
                         bu[i, j].VerticalAlignment = VerticalAlignment.Stretch;
@@ -83,7 +132,74 @@ namespace CSharp1
                 slider[i].ValueChanged += Slider_ValueChanged;
                 uniformGrid2.Children.Add(slider[i]);
             }
+            //for (int i = 0; i < 2; i++) { 
+            //    prgButton[i] = new Button();
+            //prgButton[i].HorizontalAlignment = HorizontalAlignment.Stretch;
+            //prgButton[i].VerticalAlignment = VerticalAlignment.Stretch;
+            //prgButton[i].Click += HandleprgButtonClicked;
+            ////   saveSlot[i].Unchecked += HandleChannelSelUnChecked;
+            //prgButton[i].Tag = i;
+            //    //
+            //    bnkButton[i] = new Button();
+            //    bnkButton[i].HorizontalAlignment = HorizontalAlignment.Stretch;
+            //    bnkButton[i].VerticalAlignment = VerticalAlignment.Stretch;
+            //    bnkButton[i].Click += HandlebnkButtonClicked;
+            //    //   saveSlot[i].Unchecked += HandleChannelSelUnChecked;
+            //    bnkButton[i].Tag = i;
 
+            //}
+
+        }
+
+        public void pattern_load_struct(int tabentry)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                for (int j = 0; j < 16; j++)
+                {
+                 
+                    bu[i,j].IsChecked = thepattern.vec_bs[(j) + (i * 16) + ((80) * tabentry)] != 0 ;  // INT TO BOOl
+                  
+
+                }
+            }
+        }
+        public void pattern_save_struct(int tabentry)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                for (int j = 0; j < 16; j++)
+                {
+                    //vec_bs[1] = 1;
+                    // thepattern.vec_bs[1] = 1;
+                    //this.thepattern.vec_bs[(i) + (j * 16) + ((128) * tabentry)] = 1;
+                    //int index = (j) + (i * 16) + ((80) * tabentry);
+                   // Debug.WriteLine("INDEXXX " + index);
+                    thepattern.vec_bs[(j) + (i * 16) + ((80) * tabentry)] = ((bool)bu[i,j].IsChecked) ? 1 : 0 ;
+                    //query.bindValue(":rowid", ((i)+(j*16)+((128)*tabentry)+1));
+
+                    //qDebug()<<"IDD:" << (i)+(j*16)+((128)*tabentry);
+                }
+            }
+
+
+
+        }
+
+
+
+        private void HandlebnkButtonClicked(object sender, RoutedEventArgs e)
+        {
+            //Button button = sender as Button;
+            //int m = (int)button.Tag;
+            //bank += m > 0 ? 1 : -1;
+           
+            ////    throw new NotImplementedException();
+            //MainPage.bankchangeme(channel,bank)
+        }
+        private void HandleprgButtonClicked(object sender, RoutedEventArgs e)
+        {
+            // throw new NotImplementedException();
         }
 
         private void Slider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
@@ -94,6 +210,8 @@ namespace CSharp1
             var client = sliderclientDict[sender as Slider];
             Debug.WriteLine(client+ " " + sl.Value);
             //  Debug.WriteLine(client);
+            MainPage.bpm_value((int)sl.Value);
+
 
             //throw new NotImplementedException();
         }

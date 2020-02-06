@@ -46,7 +46,7 @@ namespace CSharp1
         public UniformGrid my = new UniformGrid();
         public UniformGrid my1 = new UniformGrid();
 
-        public Room[] room = new Room[10];
+        public static Room[] room = new Room[10];
         public ToggleButton[] channelSel = new ToggleButton[10];
         public ToggleButton[] saveSlot = new ToggleButton[10];
         public ToggleButton[] loadSlot = new ToggleButton[10];
@@ -54,18 +54,23 @@ namespace CSharp1
         public Button[] bnkButton = new Button[2];
         public static Rectangle[] led = new Rectangle[16];
 
-        public Worker playsequence;
+        public static Worker playsequence;
 
 
         MyMidiDeviceWatcher inputDeviceWatcher;
         MyMidiDeviceWatcher outputDeviceWatcher;
 
-        MidiInPort midiInPort;
-        IMidiOutPort midiOutPort;
+        static MidiInPort midiInPort;
+        static IMidiOutPort midiOutPort;
+
+        
+        int tabentry = 0;
+        int numentries =10;
+        int activechannel=0;
         public MainPage()
         {
-           
 
+            //prgButton[0].Visibility = Visibility.Collapsed;
             this.InitializeComponent();
             
 
@@ -94,10 +99,25 @@ namespace CSharp1
             // Creating object of ExThread class 
             playsequence = new Worker();
 
+            Action<object> action = (object obj) =>
+            {
+                
+                Console.WriteLine("Task={0}, obj={1}, Thread={2}",
+                Task.CurrentId, obj,
+                Thread.CurrentThread.ManagedThreadId);
+                playsequence.mythread1();
+            };
             // Creating thread 
             // Using thread class 
-            Thread thr = new Thread(new ThreadStart(playsequence.mythread1));
-            thr.Start();
+
+            // Thread thr = new Thread(new ThreadStart(playsequence.mythread1));
+            // thr.Start();
+
+            Task t1 = new Task (action, "alpha");
+            t1.Start();
+            Console.WriteLine("t1 has been launched. (Main Thread={0})",
+                              Thread.CurrentThread.ManagedThreadId);
+            // startPlaySequence();
 
             ButtonsUniformGrid.Visibility = Visibility.Visible;
             ButtonsUniformGrid_Copy.Orientation = Orientation.Horizontal;
@@ -106,6 +126,7 @@ namespace CSharp1
             for (int i = 0; i < numchannels; i++)
             {
                 room[i] = new Room();
+                room[i].channel = i;
                 thegrid.Children.Add(room[i].uniformGrid1);
                 thegrid.Children.Add(room[i].uniformGrid2);
               
@@ -256,13 +277,20 @@ namespace CSharp1
 
         private void HandleprgButtonClicked(object sender, RoutedEventArgs e)
         {
-           // throw new NotImplementedException();
+            Button button = sender as Button;
+            int m = (int)button.Tag;
+            room[0].bank += m > 0 ? 1 : -1;
+
+            ////    throw new NotImplementedException();
+            //MainPage.bankchangeme(channel,bank)
+            // throw new NotImplementedException();
         }
 
         private void HandlesaveSlotChecked(object sender, RoutedEventArgs e)
         {
             ToggleButton toggle = sender as ToggleButton;
             int m = (int)toggle.Tag;
+            tabentry = m;
             for (int i = 0; i < numchannels; i++)
             {
                 if (i != m)
@@ -271,8 +299,12 @@ namespace CSharp1
 
                     saveSlot[i].IsChecked = false;
                 }
+              
             }
         }
+
+     
+
 
         private void HandleloadFromDBButtonChecked(object sender, RoutedEventArgs e)
         {
@@ -293,17 +325,18 @@ namespace CSharp1
         {
             //  throw new NotImplementedException();
             Debug.WriteLine("111111111111111");
+           
             playsequence.isplaying = !playsequence.isplaying;
-            
+           
             //   DoSomething();
             Debug.WriteLine("2222222222222");
 
-            byte channel = 0;
-            byte note = 60;
-            byte velocity = 127;
-            IMidiMessage midiMessageToSend = new MidiNoteOnMessage(channel, note, velocity);
-
-            midiOutPort.SendMessage(midiMessageToSend);
+            //byte channel = 0;
+            //byte note = 60;
+            //byte velocity = 127;
+            //IMidiMessage midiMessageToSend = new MidiNoteOnMessage(channel, note, velocity);
+            
+            //midiOutPort.SendMessage(midiMessageToSend);
         }
 
         private void HandleloadSlotChecked(object sender, RoutedEventArgs e)
@@ -311,6 +344,7 @@ namespace CSharp1
             //  throw new NotImplementedException();
             ToggleButton toggle = sender as ToggleButton;
             int m = (int)toggle.Tag;
+            tabentry = m;
             for (int i = 0; i < numchannels; i++)
             {
                 if (i != m)
@@ -320,11 +354,83 @@ namespace CSharp1
                     loadSlot[i].IsChecked = false;
                 }
             }
+            //
+
+            for (int x = 0; x < 10; x++)
+            {
+                room[x].pattern_load_struct(tabentry);
+                //room[x].slider[1].SetValue(room[x].thepattern.int_vs[tabentry]));
+                room[x].slider[1].Value = room[x].thepattern.int_vs[tabentry];
+                room[x].slider[2].Value= room[x].thepattern.int_sl2[tabentry];
+                //room[x]->vol_slider->setValue(room[x]->thepattern.int_vs[tabentry]);
+               
+            room[x].prg = room[x].thepattern.int_prg[tabentry];
+           // room[x]->prg = room[x]->thepattern.int_prg[tabentry];
+               
+            room[x].bank = room[x].thepattern.int_bnk[tabentry];
+                //room[x]->bank = room[x]->thepattern.int_bnk[tabentry];
+
+
+                bankchangeme(x, room[x].bank);
+                prgchangeme(x, room[x].prg);
+                vol_value(x,room[x].thepattern.int_vs[tabentry]);
+                //vol_value(x, room[x]->vol_slider->value());
+
+                //  qDebug()<<"X:"<<x<<"tabentry:"<<tabentry;
+            }
+
+
+
+        }
+        public static void bpm_value(int thevalue)
+        {
+            playsequence.thebpm = thevalue;
+            playsequence.ms = ((60000.0 / (double)thevalue) / (double)4);
+            playsequence.dur = playsequence.ms;
+
+
+        }
+        public static void vol_value(int x, int v)
+        {
+            IMidiMessage midiMessageToSend = new MidiControlChangeMessage((byte)x, 7, (byte) v);
+            midiOutPort.SendMessage(midiMessageToSend);
+        }
+
+        public static void prgchangeme(int x, int prg)
+        {
+            IMidiMessage midiMessageToSend1 = new MidiProgramChangeMessage((byte)x, (byte) prg);
+            midiOutPort.SendMessage(midiMessageToSend1);
+        }
+
+        public static void bankchangeme(int x, int bank)
+        {
+            byte channel = (byte) x;
+            byte controller = 0;
+            byte controlValue = (byte)bank;
+            byte prg = (byte)room[x].prg;
+            IMidiMessage midiMessageToSend = new MidiControlChangeMessage(channel,controller,controlValue);
+            IMidiMessage midiMessageToSend1 = new MidiProgramChangeMessage(channel, prg);
+          
+            midiOutPort.SendMessage(midiMessageToSend);
+            midiOutPort.SendMessage(midiMessageToSend1);
         }
 
         private void HandlesavePatternChecked(object sender, RoutedEventArgs e)
         {
-        //    throw new NotImplementedException();
+           // ToggleButton toggle = sender as ToggleButton;
+           // int m = (int)toggle.Tag;
+
+            for (int x = 0; x < 10; x++)
+            {
+                room[x].pattern_save_struct(tabentry);
+                room[x].thepattern.int_vs[tabentry] = (int)room[x].slider[1].Value;
+                room[x].thepattern.int_sl2[tabentry] = (int)room[x].slider[2].Value;
+               room[x].thepattern.int_prg[tabentry] = room[x].prg;
+                room[x].thepattern.int_bnk[tabentry] = room[x].bank;
+                // qDebug()<<"X:"<<x<<"tabentry:"<<tabentry;
+            }
+
+            //    throw new NotImplementedException();
         }
 
         private void HandleChannelSelUnChecked(object sender, RoutedEventArgs e)
@@ -346,7 +452,7 @@ namespace CSharp1
                     channelSel[i].IsChecked = false;
                 }
             }
-           
+            activechannel = m;
             //channelSel[m].IsChecked = true;
             room[m].uniformGrid1.Visibility = Visibility.Visible;
             room[m].uniformGrid2.Visibility = Visibility.Visible;
@@ -417,6 +523,7 @@ namespace CSharp1
         }
 
         public async  static void DoSomething(short step)
+       // public static void DoSomething(short step)
         {
 
 
@@ -426,6 +533,7 @@ namespace CSharp1
 
 
             await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+          //  Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
             {
                 //var frame = new Frame();
                 //frame.Navigate(typeof(Frame2));
