@@ -21,7 +21,7 @@ namespace CSharp1
         public Dictionary<ToggleButton, Tuple<int,int>> clientDict = new Dictionary<ToggleButton, Tuple<int,int>>();
         public Dictionary<Slider, int> sliderclientDict = new Dictionary<Slider,int>();
 
-        public MyToggle[,] bu = new MyToggle[5, 16];
+        public  MyToggle[,] bu = new MyToggle[5, 16];
         public Slider[] slider = new Slider[3];
 
         // public Button[] prgButton = new Button[2];
@@ -92,7 +92,7 @@ namespace CSharp1
 
             uniformGrid1.Visibility = Visibility.Collapsed;
             uniformGrid2.Visibility = Visibility.Collapsed;
-
+            
 
             for (int i = 0; i < 5; i++)
                 for (int j = 0; j < 16; j++)
@@ -202,15 +202,15 @@ namespace CSharp1
             // throw new NotImplementedException();
         }
 
-        private void Slider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        private  void Slider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
            Slider sl = sender as Slider;
             
-            // throw new NotImplementedException();
-            var client = sliderclientDict[sender as Slider];
-            Debug.WriteLine(client+ " " + sl.Value);
-            //  Debug.WriteLine(client);
-            MainPage.bpm_value((int)sl.Value);
+            //// throw new NotImplementedException();
+            //var client = sliderclientDict[sender as Slider];
+            //Debug.WriteLine(client+ " " + sl.Value);
+            ////  Debug.WriteLine(client);
+            //bpm_value((int)sl.Value);
 
 
             //throw new NotImplementedException();
