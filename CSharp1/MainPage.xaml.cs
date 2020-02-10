@@ -39,7 +39,7 @@ namespace CSharp1
 
 
         public BlankPage1 mypage;
-        public Worker playsequence;
+        public static Worker playsequence;
         public MainPage()
         {
 
@@ -53,7 +53,7 @@ namespace CSharp1
             //Window.Current.Content = theframe;
 
             
-            playsequence = new Worker();
+            playsequence = new Worker(mypage.room);
 
          //   Worker.LogHandler myLogger = new Worker.LogHandler(BlankPage1.sendMidiMessage);
             Worker.LogHandler myLogger = new Worker.LogHandler(mypage.sendMidiMessage);

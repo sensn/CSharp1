@@ -11,8 +11,10 @@ namespace CSharp1
 {
     public class Worker
     {
+       // public pattern thepattern;
+       public Room[] myroom;
         public int oddeven;
-        public bool isplaying = true;
+        public bool isplaying = false;
         public long timeinterval;
 
         public int thebpm = 150;
@@ -31,9 +33,9 @@ namespace CSharp1
         //    midiOutPort1 = midiOutPort;
         // }
         // Non-static method 
-        public Worker()
+        public Worker(Room[] room)
         {
-           
+            myroom = room;
         }
 
         public void mythread1()
@@ -68,16 +70,22 @@ namespace CSharp1
                        // BlankPage1.DoSomething(index);
                         // mypage.DoSomething(index);
                        
-                        for (int j = 0; j < 15; j++)
-                        {
-                            // midi.sendMsg(176 + j | 123 << 8 | 0 << 16);  // ALL NOTES OFF
-                        }
-                       // Debug.WriteLine("INDEX " + index);
-                        for (int i = 0; i < 10; i++)
-                        {
-                            for (int j = 0; j < 5; j++)
-                            {
-                                Process(myLogger1,i,j,index);
+                        //for (int j = 0; j < 15; j++)
+                        //{
+                        //    // midi.sendMsg(176 + j | 123 << 8 | 0 << 16);  // ALL NOTES OFF
+                        //}
+                        //Debug.WriteLine("INDEX: " + index);
+                       
+                        //for (int i = 0; i < 10; i++)
+                        //{
+                        //    for (int j = 0; j < 5; j++)
+                        //    {
+                               // Debug.WriteLine("MYROOM: " + myroom[0].bu[i, j].IsChecked);
+                               
+                               // Debug.WriteLine("MYROOM: " + myroom[0].thepattern.vec_bs[0]);
+                                
+                               // Process(myLogger1,i,j,index);
+                                Process(myLogger1,1,1,index);
                                 //    if (MainPage.room[i]->Field[worker->index - 1][j]->bstate > 0)
                                 //  Debug.WriteLine("CHECK IT !!! : " + mp.room[1].bu[1, 1].IsChecked);
 
@@ -91,8 +99,8 @@ namespace CSharp1
                                 //   midiOutPort1.SendMessage(midiMessageToSend);
 
 
-                            }
-                        }
+                        //    }
+                        //}
                                 index++;
                                 if (index == 16)
                                 { //reset things

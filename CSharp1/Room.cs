@@ -36,6 +36,8 @@ namespace CSharp1
         {
            // public List<int> int_tempo;
           
+            public int[,] vec_bs1 ;
+            //public List<int> vec_bs1;
             public List<int> vec_bs;
             public List<int> int_vs;
             public List<int> int_bnk;
@@ -50,6 +52,8 @@ namespace CSharp1
             thepattern = new pattern();
            // thepattern.vec_bs = new List<int>(10000);
           // thepattern.vec_bs = new List<int>(5*16*10);
+           thepattern.vec_bs1 = new int[5,16];
+           //thepattern.vec_bs1 = new List<int>(5 * 16 * 10);
            thepattern.vec_bs = new List<int>(5 * 16 * 10);
            thepattern.int_bnk = new List<int>(10);
            thepattern.int_prg = new List<int>(10);
@@ -115,8 +119,8 @@ namespace CSharp1
                         uniformGrid1.Children.Add(bu[i, j]);
                     }
                 }
-            bu[1, 1].state = 1;
-            bu[1, 1].update();
+            //bu[1, 1].state = 1;
+            //bu[1, 1].update();
 
             for (int i = 0; i < 3; i++)
             {
@@ -157,8 +161,13 @@ namespace CSharp1
             {
                 for (int j = 0; j < 16; j++)
                 {
-                 
-                    bu[i,j].IsChecked = thepattern.vec_bs[(j) + (i * 16) + ((80) * tabentry)] != 0 ;  // INT TO BOOl
+                     thepattern.vec_bs1[i, j]  = thepattern.vec_bs[(j) + (i * 16) + ((80) * tabentry)];
+                  
+                    
+                    bu[i,j].IsChecked = thepattern.vec_bs1[i, j] != 0 ;  // INT TO BOOl
+                   
+                    
+                    //bu[i,j].IsChecked = thepattern.vec_bs[(j) + (i * 16) + ((80) * tabentry)] != 0 ;  // INT TO BOOl
                   
 
                 }
@@ -175,7 +184,11 @@ namespace CSharp1
                     //this.thepattern.vec_bs[(i) + (j * 16) + ((128) * tabentry)] = 1;
                     //int index = (j) + (i * 16) + ((80) * tabentry);
                    // Debug.WriteLine("INDEXXX " + index);
-                    thepattern.vec_bs[(j) + (i * 16) + ((80) * tabentry)] = ((bool)bu[i,j].IsChecked) ? 1 : 0 ;
+                  //  thepattern.vec_bs[(j) + (i * 16) + ((80) * tabentry)] = ((bool)bu[i,j].IsChecked) ? 1 : 0 ;
+                  
+                    thepattern.vec_bs[(j) + (i * 16) + ((80) * tabentry)] = thepattern.vec_bs1[i,j];
+                    
+                    
                     //query.bindValue(":rowid", ((i)+(j*16)+((128)*tabentry)+1));
 
                     //qDebug()<<"IDD:" << (i)+(j*16)+((128)*tabentry);
@@ -228,7 +241,7 @@ namespace CSharp1
 
             var client = clientDict[sender as ToggleButton];
             Debug.WriteLine(client.Item1 + " " + client.Item2);
-
+            thepattern.vec_bs1[client.Item1, client.Item2] = 0;
             //throw new NotImplementedException();
         }
 
@@ -246,6 +259,12 @@ namespace CSharp1
             var client = clientDict[sender as ToggleButton];
             Debug.WriteLine(client.Item1 + " " + client.Item2);
             //  throw new NotImplementedException();
+            
+            
+            this.thepattern.vec_bs1[client.Item1, client.Item2] = 1;
+           
+            Debug.WriteLine("CHANNEL:" + channel + " VECBS! " + thepattern.vec_bs1[client.Item1, client.Item2]);
+          //  bu[client.Item1, client.Item2].update();
         }
     } //Class
 }

@@ -280,7 +280,7 @@ namespace CSharp1
             room[0].uniformGrid1.Visibility = Visibility.Visible;
             room[0].uniformGrid2.Visibility = Visibility.Visible;
 
-            checkit();
+          //  checkit();
         }  // public MAINPAGE
 
         private void HandleprgButtonClicked(object sender, RoutedEventArgs e)
@@ -340,7 +340,7 @@ namespace CSharp1
             //  throw new NotImplementedException();
             //Debug.WriteLine("111111111111111");
 
-        //    playsequence.isplaying = !playsequence.isplaying;
+            MainPage.playsequence.isplaying = !MainPage.playsequence.isplaying;
 
             //   DoSomething();
             Debug.WriteLine("PLAY");
@@ -405,13 +405,13 @@ namespace CSharp1
         public static void vol_value(int x, int v)
         {
             IMidiMessage midiMessageToSend = new MidiControlChangeMessage((byte)x, 7, (byte)v);
-            midiOutPort.SendMessage(midiMessageToSend);
+           // midiOutPort.SendMessage(midiMessageToSend);
         }
 
         public static void prgchangeme(int x, int prg)
         {
             IMidiMessage midiMessageToSend1 = new MidiProgramChangeMessage((byte)x, (byte)prg);
-            midiOutPort.SendMessage(midiMessageToSend1);
+            //midiOutPort.SendMessage(midiMessageToSend1);
         }
 
         public static void bankchangeme(int x, int bank)
@@ -423,32 +423,66 @@ namespace CSharp1
             IMidiMessage midiMessageToSend = new MidiControlChangeMessage(channel, controller, controlValue);
             // IMidiMessage midiMessageToSend1 = new MidiProgramChangeMessage(channel, prg);
 
-            midiOutPort.SendMessage(midiMessageToSend);
+           // midiOutPort.SendMessage(midiMessageToSend);
+            
+            
             //  midiOutPort.SendMessage(midiMessageToSend1);
         }
         public void checkit()
         {
-              Debug.WriteLine("CHECK IT !!!!!!!!!!!!!!!!!! : " +room[1].bu[1, 1].IsChecked);
-
+            //  Debug.WriteLine("CHECK IT !!!!!!!!!!!!!!!!!! : " +room[1].bu[0, 1].IsChecked);
+              Debug.WriteLine("CHECK IT !!!!!!!!!!!!!!!!!! : " );
+          //  Debug.WriteLine("ROOM: " + (bool)room[0].bu[0, 0].IsChecked);
         }
 
         public  void sendMidiMessage(int i, int j, int index)
         {
+            // Debug.WriteLine("DELEGIERT + ");
+            // Debug.WriteLine("HOHO:" + room[i].bu[j, index].IsChecked);
+            // Debug.WriteLine("HOHO:" + room[1].bu[0, 1].IsChecked);
+            //Debug.WriteLine("DDD " + i +" "+j+" "+index);
 
-           Debug.WriteLine(room[i].bu[j, index].IsChecked);
-           // Debug.WriteLine("DDD " + i +" "+j+" "+index);
-           
+            //Debug.WriteLine("ROOM: " + room[i].thepattern.vec_bs1[j,index]);
+            for (int x = 0; x < 15; x++)
+            {
+                //  midi.sendMsg(176 + j | 123 << 8 | 0 << 16);  // ALL NOTES OF
+                IMidiMessage midiMessageToSend = new MidiControlChangeMessage((byte)(x), (byte)123, (byte)0);
+                midiOutPort.SendMessage(midiMessageToSend);
+            }
+           // Debug.WriteLine("Index: " + room[i].thepattern.vec_bs1[j,index]);
+            Debug.WriteLine("Index: " + index);
+
+            for (int x = 0; x < 10; x++)
+            {
+                for (int y = 0; y < 5; y++)
+                {
+                    if (room[x].thepattern.vec_bs1[y, index] == 1)
+                    {
+                        Debug.WriteLine("IndexXXX: " + index);
+                       
+                        byte channel = (byte)x;
+                        byte note = (byte)(35 + y);
+                        byte velocity = 100;
+
+                        IMidiMessage midiMessageToSend = new MidiNoteOnMessage(channel, note, velocity);
+
+                        midiOutPort.SendMessage(midiMessageToSend);
+                    }
+                    Debug.WriteLine("X: " +x + " Y: " +y + "Index:" +index + " Value:" + room[x].thepattern.vec_bs1[y, index]);
+
+                }
+            }
+            //   Debug.WriteLine("ROOM: " + (bool)room[0].bu[i, j].IsChecked);
+
             // {
             // midi.sendMsg(0x90 + i | (35 + j) << 8 | 64 << 16);
-            byte channel = (byte)i;
-            byte note = (byte)(35 + j);
-            byte velocity = 127;
+
             //  IMidiMessage midiMessageToSend = new MidiNoteOnMessage(channel, note, velocity);
 
             //  midiOutPort.SendMessage(midiMessageToSend);
-           //checkit();
-            Debug.WriteLine("DELEGIERT");
-           // DoSomething((short)index);
+            // checkit();
+            // Debug.WriteLine("DELEGIERT");
+            DoSomething((short)index);
             //  }
         }
 
