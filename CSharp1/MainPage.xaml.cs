@@ -39,45 +39,48 @@ namespace CSharp1
 
 
         public BlankPage1 mypage;
-        public static Worker playsequence;
+      //  public static Worker playsequence;
         public MainPage()
         {
 
             //prgButton[0].Visibility = Visibility.Collapsed;
             InitializeComponent();
-
-            mypage = new BlankPage1();
-            //Frame theframe = new Frame();
-            //theframe = Window.Current.Content as Frame;
-            // theframe.Navigate(typeof(BlankPage1));
-            //Window.Current.Content = theframe;
+         //   playsequence = new Worker();
+         //   mypage = new BlankPage1();
+         //   //Frame theframe = new Frame();
+         //   //theframe = Window.Current.Content as Frame;
+         //   // theframe.Navigate(typeof(BlankPage1));
+         //   //Window.Current.Content = theframe;
 
             
-            playsequence = new Worker(mypage.room);
+         //   //playsequence = new Worker(mypage.room);
+            
 
-         //   Worker.LogHandler myLogger = new Worker.LogHandler(BlankPage1.sendMidiMessage);
-            Worker.LogHandler myLogger = new Worker.LogHandler(mypage.sendMidiMessage);
-           // Worker.LogHandler myLogger = new Worker.LogHandler(BlankPage1.sendMidiMessage);
-            playsequence.myLogger1 = myLogger;
+         ////   Worker.LogHandler myLogger = new Worker.LogHandler(BlankPage1.sendMidiMessage);
+         //   Worker.LogHandler myLogger = new Worker.LogHandler(mypage.sendMidiMessage);
+         //  // Worker.LogHandler myLogger = new Worker.LogHandler(BlankPage1.sendMidiMessage);
+         //   playsequence.myLogger1 = myLogger;
 
-            Action<object> action = (object obj) =>
-            {
+         //   Action<object> action = (object obj) =>
+         //   {
 
-                Console.WriteLine("Task={0}, obj={1}, Thread={2}",
-                Task.CurrentId, obj,
-                Thread.CurrentThread.ManagedThreadId);
-                playsequence.mythread1();
-            };
-            // Creating thread 
-            // Using thread class 
+         //       Console.WriteLine("Task={0}, obj={1}, Thread={2}",
+         //       Task.CurrentId, obj,
+         //       Thread.CurrentThread.ManagedThreadId);
+         //       playsequence.mythread1();
+         //   };
 
-            // Thread thr = new Thread(new ThreadStart(playsequence.mythread1));
-            // thr.Start();
 
-            Task t1 = new Task(action, "alpha");
-            t1.Start();
-            Console.WriteLine("t1 has been launched. (Main Thread={0})",
-                              Thread.CurrentThread.ManagedThreadId);
+            // Creating thread
+            //  Using thread class
+
+            //Thread thr = new Thread(new ThreadStart(playsequence.mythread1));
+            //thr.Start();
+
+            //Task t1 = new Task(action, "alpha");
+            //t1.Start();
+            //Console.WriteLine("t1 has been launched. (Main Thread={0})",
+            //                  Thread.CurrentThread.ManagedThreadId);
             // startPlaySequence();
 
 

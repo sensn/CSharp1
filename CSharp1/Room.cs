@@ -18,7 +18,7 @@ namespace CSharp1
         public UniformGrid uniformGrid2 = new UniformGrid();
         public bool vis = true;
 
-        public Dictionary<ToggleButton, Tuple<int,int>> clientDict = new Dictionary<ToggleButton, Tuple<int,int>>();
+        public Dictionary<MyToggle, Tuple<int,int>> clientDict = new Dictionary<MyToggle, Tuple<int,int>>();
         public Dictionary<Slider, int> sliderclientDict = new Dictionary<Slider,int>();
 
         public  MyToggle[,] bu = new MyToggle[5, 16];
@@ -32,10 +32,13 @@ namespace CSharp1
        public  int bank = 0;
         public int prg = 0;
         int tempo = 150;
+
+        public int[,] vec_bs2;
         public struct pattern
         {
-           // public List<int> int_tempo;
-          
+           
+            // public List<int> int_tempo;
+
             public int[,] vec_bs1 ;
             //public List<int> vec_bs1;
             public List<int> vec_bs;
@@ -44,15 +47,16 @@ namespace CSharp1
             public List<int> int_prg;
             public List<int> int_sl2;
         };
-        public pattern thepattern;
+        public pattern thepattern = new pattern();
        //  List<int> vec_bs;
        
         public Room()
         {
-            thepattern = new pattern();
-           // thepattern.vec_bs = new List<int>(10000);
-          // thepattern.vec_bs = new List<int>(5*16*10);
-           thepattern.vec_bs1 = new int[5,16];
+            vec_bs2 = new int[5, 16];
+            //  thepattern = new pattern();
+            // thepattern.vec_bs = new List<int>(10000);
+            // thepattern.vec_bs = new List<int>(5*16*10);
+            thepattern.vec_bs1 = new int[5,16];
            //thepattern.vec_bs1 = new List<int>(5 * 16 * 10);
            thepattern.vec_bs = new List<int>(5 * 16 * 10);
            thepattern.int_bnk = new List<int>(10);
@@ -60,8 +64,18 @@ namespace CSharp1
             
             thepattern.int_vs = new List<int>(10);
             thepattern.int_sl2 = new List<int>(10);
-            
-            
+
+
+            //for (int i = 0; i < 5; i++)
+            //{
+            //    for (int j = 0; j < 16; j++)
+            //    {
+            //       thepattern.vec_bs1[i, j] = 1;
+            //    }
+            //}
+
+
+
             for (int i = 0; i < 10; i++)
             {
                 thepattern.int_vs.Add(0);
@@ -136,6 +150,11 @@ namespace CSharp1
                 slider[i].ValueChanged += Slider_ValueChanged;
                 uniformGrid2.Children.Add(slider[i]);
             }
+            slider[0].Maximum = 600;
+            slider[0].Minimum = 30;
+            slider[1].Maximum = 127;
+            slider[1].Minimum = 0;
+
             //for (int i = 0; i < 2; i++) { 
             //    prgButton[i] = new Button();
             //prgButton[i].HorizontalAlignment = HorizontalAlignment.Stretch;
@@ -215,16 +234,18 @@ namespace CSharp1
             // throw new NotImplementedException();
         }
 
-        private  void Slider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        public  void Slider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
            Slider sl = sender as Slider;
             
             //// throw new NotImplementedException();
-            //var client = sliderclientDict[sender as Slider];
+            var client = sliderclientDict[sender as Slider];
             //Debug.WriteLine(client+ " " + sl.Value);
             ////  Debug.WriteLine(client);
-            //bpm_value((int)sl.Value);
-
+            if (client == 0)
+            BlankPage1.bpm_value((int)sl.Value);
+            if (client == 1)
+                BlankPage1.vol_value(channel, (int)sl.Value);
 
             //throw new NotImplementedException();
         }
@@ -239,32 +260,41 @@ namespace CSharp1
             Debug.WriteLine("isChecked:" + toggle.IsChecked);
             Debug.WriteLine("State:" + toggle.state);
 
-            var client = clientDict[sender as ToggleButton];
+            var client = clientDict[sender as MyToggle];
             Debug.WriteLine(client.Item1 + " " + client.Item2);
             thepattern.vec_bs1[client.Item1, client.Item2] = 0;
             //throw new NotImplementedException();
         }
 
-        private void HandleToggleButtonChecked(object sender, RoutedEventArgs e)
+        public void HandleToggleButtonChecked(object sender, RoutedEventArgs e)
         {
             // ToggleButton toggle = sender as ToggleButton;
+            //MyToggle toggle = sender as MyToggle;
             MyToggle toggle = sender as MyToggle;
             //  toggle.Background = new SolidColorBrush(Windows.UI.Colors.Yellow);
             //  throw new NotImplementedException();
             toggle.state = 1;
-            Debug.WriteLine(toggle.Resources.Values);
-            Debug.WriteLine("isChecked:" + toggle.IsChecked);
-            Debug.WriteLine("State:" + toggle.state);
+           // toggle.update();
+           // Debug.WriteLine(toggle.Resources.Values);
+           // Debug.WriteLine("isChecked:" + toggle.IsChecked);
+          //  Debug.WriteLine("State:" + toggle.state);
 
-            var client = clientDict[sender as ToggleButton];
+            var client = clientDict[sender as MyToggle];
             Debug.WriteLine(client.Item1 + " " + client.Item2);
             //  throw new NotImplementedException();
-            
-            
-            this.thepattern.vec_bs1[client.Item1, client.Item2] = 1;
-           
-            Debug.WriteLine("CHANNEL:" + channel + " VECBS! " + thepattern.vec_bs1[client.Item1, client.Item2]);
-          //  bu[client.Item1, client.Item2].update();
+
+
+         //   thepattern.vec_bs1[0, 15] = 1;
+
+           this.thepattern.vec_bs1[client.Item1, client.Item2] = 1;
+          // this.vec_bs2[client.Item1, client.Item2] = 1;
+            //bu[client.Item1, client.Item2].state = 1;
+            //bu[client.Item1, client.Item2].update();
+            Debug.WriteLine("CHANNEL:" + channel + " VECBS! " + thepattern.vec_bs1[(int)client.Item1, (int) client.Item2]);
+
+            //  bu[client.Item1, client.Item2].update();
+
+         
         }
     } //Class
 }

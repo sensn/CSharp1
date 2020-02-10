@@ -12,7 +12,7 @@ namespace CSharp1
     public class Worker
     {
        // public pattern thepattern;
-       public Room[] myroom;
+      // public Room[] myroom;
         public int oddeven;
         public bool isplaying = false;
         public long timeinterval;
@@ -33,9 +33,10 @@ namespace CSharp1
         //    midiOutPort1 = midiOutPort;
         // }
         // Non-static method 
-        public Worker(Room[] room)
+        //public Worker(Room[] room)
+        public Worker()
         {
-            myroom = room;
+           // myroom = room;
         }
 
         public void mythread1()
@@ -86,6 +87,7 @@ namespace CSharp1
                                 
                                // Process(myLogger1,i,j,index);
                                 Process(myLogger1,1,1,index);
+
                                 //    if (MainPage.room[i]->Field[worker->index - 1][j]->bstate > 0)
                                 //  Debug.WriteLine("CHECK IT !!! : " + mp.room[1].bu[1, 1].IsChecked);
 

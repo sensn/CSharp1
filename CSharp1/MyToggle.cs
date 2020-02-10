@@ -19,9 +19,7 @@ namespace CSharp1
         public short state = 0;
 
         public MyToggle()
-        {
-            
-            
+        {            
             Background = new SolidColorBrush(Windows.UI.Colors.DarkGray);
           //  Foreground = new SolidColorBrush(Windows.UI.Colors.DarkRed);
            // FlatStyle = FlatStyle.Flat;
@@ -33,9 +31,7 @@ namespace CSharp1
         {
             if (state == 1)
             {
-              
                 IsChecked = true;
-                
             }
 
         }

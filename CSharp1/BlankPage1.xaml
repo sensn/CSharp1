@@ -39,6 +39,7 @@
         </controls:UniformGrid>
         <ListBox x:Name="midiInPortListBox" SelectionChanged="midiInPortListBox_SelectionChanged" Grid.Row="2" Grid.Column="1"/>
         <ListBox x:Name="midiOutPortListBox" SelectionChanged="midiOutPortListBox_SelectionChanged" Grid.Row="3" Grid.Column="1"/>
+        <Button Content="Button" Grid.Row="0" Grid.Column="1" Grid.RowSpan="1" VerticalAlignment="Stretch" Width="145" Margin="0,0,0,6" Click="Button_Click_2"/>
     </Grid>
 
 

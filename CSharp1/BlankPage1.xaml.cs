@@ -55,7 +55,8 @@ namespace CSharp1
         public Button[] bnkButton = new Button[2];
         public static Rectangle[] led = new Rectangle[16];
 
-
+        TextBlock prgText;
+        TextBlock bnkText;
 
 
         MyMidiDeviceWatcher inputDeviceWatcher;
@@ -68,9 +69,9 @@ namespace CSharp1
         int tabentry = 0;
         int numentries = 10;
         int activechannel = 0;
-        
-        //public Worker playsequence;
 
+        //public Worker playsequence;
+        public static Worker playsequence;
         public BlankPage1()
         {
             InitializeComponent();
@@ -78,6 +79,35 @@ namespace CSharp1
             this.NavigationCacheMode = Windows.UI.Xaml.Navigation.NavigationCacheMode.Enabled;
 
             Debug.WriteLine("Servas Wöd, I brauch a göd! CREATE TASK");
+          
+             playsequence = new Worker();
+            Worker.LogHandler myLogger = new Worker.LogHandler(sendMidiMessage);
+            // Worker.LogHandler myLogger = new Worker.LogHandler(BlankPage1.sendMidiMessage);
+            playsequence.myLogger1 = myLogger;
+
+            Action<object> action = (object obj) =>
+            {
+
+                Console.WriteLine("Task={0}, obj={1}, Thread={2}",
+                Task.CurrentId, obj,
+                Thread.CurrentThread.ManagedThreadId);
+                playsequence.mythread1();
+            };
+
+
+            // Creating thread
+            //  Using thread class
+
+            //Thread thr = new Thread(new ThreadStart(playsequence.mythread1));
+            //thr.Start();
+
+            Task t1 = new Task(action, "alpha");
+            t1.Start();
+            Console.WriteLine("t1 has been launched. (Main Thread={0})",
+                              Thread.CurrentThread.ManagedThreadId);
+            // startPlaySequence();
+
+
 
             //playsequence = new Worker();
 
@@ -95,14 +125,6 @@ namespace CSharp1
             //// Thread thr = new Thread(new ThreadStart(playsequence.mythread1));
             //// thr.Start();
 
-            //Task t1 = new Task(action, "alpha");
-            //t1.Start();
-            //Console.WriteLine("t1 has been launched. (Main Thread={0})",
-            //                  Thread.CurrentThread.ManagedThreadId);
-            //// startPlaySequence();
-
-
-
             // DefaultLaunch();    //Launch a app from asociated filetype
             //****MIDI
             inputDeviceWatcher =
@@ -117,7 +139,7 @@ namespace CSharp1
 
             //*****MIDI END
 
-
+           // midiOutPortListBox.SelectedIndex = 0;
 
             //System.Threading.Tasks.Task task1 = new Task(DoSomething);
             //task1.Start();
@@ -165,12 +187,22 @@ namespace CSharp1
             led[3].Fill = new SolidColorBrush(Windows.UI.Colors.DarkRed);  //SAPCER
 
 
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 1; i++)   //
             {
                 Border myspacer1 = new Border();
                 myspacer1.Background = new SolidColorBrush(Windows.UI.Colors.Black);  //SAPCER
                 ButtonsUniformGrid_Copy.Children.Add(myspacer1);
             }
+            prgText = new TextBlock();
+            prgText.Text = "0";
+            prgText.Foreground = new SolidColorBrush(Windows.UI.Colors.Red);
+            // prgText.Width = 240;
+            prgText.IsTextSelectionEnabled = true;
+            // prgText.TextWrapping = TextWrapping.Wrap;
+            prgText.HorizontalAlignment = HorizontalAlignment.Center;
+            prgText.VerticalAlignment = VerticalAlignment.Center;
+           
+            ButtonsUniformGrid_Copy.Children.Add(prgText);
             for (int i = 0; i < 2; i++)
             {
                 prgButton[i] = new Button();
@@ -181,6 +213,8 @@ namespace CSharp1
                 prgButton[i].Tag = i;
                 ButtonsUniformGrid_Copy.Children.Add(prgButton[i]);
             }
+            prgButton[0].Content = "prg+";
+            prgButton[1].Content = "prg-";
 
             Border myspacer2 = new Border();
             myspacer2.Background = new SolidColorBrush(Windows.UI.Colors.Black);  //SAPCER
@@ -191,12 +225,21 @@ namespace CSharp1
             playbutton.VerticalAlignment = VerticalAlignment.Stretch;
             playbutton.Click += HandleplayButtonClicked;
             ButtonsUniformGrid_Copy.Children.Add(playbutton);
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < 11; i++)
             {
                 Border myspacer1 = new Border();
                 myspacer1.Background = new SolidColorBrush(Windows.UI.Colors.Black);  //SAPCER
                 ButtonsUniformGrid_Copy.Children.Add(myspacer1);
             }
+            bnkText = new TextBlock();
+            bnkText.Text = "0";
+            bnkText.Foreground = new SolidColorBrush(Windows.UI.Colors.Red);
+            bnkText.HorizontalAlignment = HorizontalAlignment.Center;
+            bnkText.VerticalAlignment = VerticalAlignment.Center;
+            // bnkText.Width = 240;
+            bnkText.IsTextSelectionEnabled = true;
+            bnkText.TextWrapping = TextWrapping.Wrap;
+            ButtonsUniformGrid_Copy.Children.Add(bnkText);
             for (int i = 0; i < 2; i++)
             {
                 bnkButton[i] = new Button();
@@ -207,7 +250,8 @@ namespace CSharp1
                 bnkButton[i].Tag = i;
                 ButtonsUniformGrid_Copy.Children.Add(bnkButton[i]);
             }
-
+            bnkButton[0].Content = "bnk+";
+            bnkButton[1].Content = "bnk-";
 
             Button savePattern = new Button();
             savePattern.HorizontalAlignment = HorizontalAlignment.Stretch;
@@ -279,21 +323,11 @@ namespace CSharp1
 
             room[0].uniformGrid1.Visibility = Visibility.Visible;
             room[0].uniformGrid2.Visibility = Visibility.Visible;
-
+           // midiOut1();
           //  checkit();
         }  // public MAINPAGE
 
-        private void HandleprgButtonClicked(object sender, RoutedEventArgs e)
-        {
-            Button button = sender as Button;
-            int m = (int)button.Tag;
-            room[0].prg += m > 0 ? 1 : -1;
-            prgchangeme(activechannel, room[activechannel].prg);
-            ////    throw new NotImplementedException();
-          //  bankchangeme(channel,bank)
-            // throw new NotImplementedException();
-        }
-
+        
         private void HandlesaveSlotChecked(object sender, RoutedEventArgs e)
         {
             ToggleButton toggle = sender as ToggleButton;
@@ -303,11 +337,8 @@ namespace CSharp1
             {
                 if (i != m)
                 {
-
-
                     saveSlot[i].IsChecked = false;
                 }
-
             }
         }
 
@@ -329,28 +360,29 @@ namespace CSharp1
             //    throw new NotImplementedException();
             Button button = sender as Button;
             int m = (int)button.Tag;
-            room[0].bank += m > 0 ? 1 : -1;
+            room[activechannel].bank += m > 0 ? (room[activechannel].bank < 1)? 0 : -1 : 1;
             bankchangeme(activechannel, room[activechannel].bank);
             prgchangeme(activechannel, room[activechannel].prg);
+            bnkText.Text = room[activechannel].bank.ToString();
+
+        }
+        private void HandleprgButtonClicked(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            int m = (int)button.Tag;
+            room[activechannel].prg += m > 0 ? (room[activechannel].prg < 1) ? 0 : -1 : 1;
+            prgchangeme(activechannel, room[activechannel].prg);
+            prgText.Text = room[activechannel].prg.ToString();
+            ////    throw new NotImplementedException();
+            //  bankchangeme(channel,bank)
+            // throw new NotImplementedException();
         }
 
         private void HandleplayButtonClicked(object sender, RoutedEventArgs e)
         {
-            this.Frame.Navigate(typeof(BlankPage1));
-            //  throw new NotImplementedException();
-            //Debug.WriteLine("111111111111111");
-
-            MainPage.playsequence.isplaying = !MainPage.playsequence.isplaying;
-
-            //   DoSomething();
+          //  this.Frame.Navigate(typeof(BlankPage1));
+            playsequence.isplaying = !playsequence.isplaying;
             Debug.WriteLine("PLAY");
-
-            //byte channel = 0;
-            //byte note = 60;
-            //byte velocity = 127;
-            //IMidiMessage midiMessageToSend = new MidiNoteOnMessage(channel, note, velocity);
-
-            //midiOutPort.SendMessage(midiMessageToSend);
         }
 
         private void HandleloadSlotChecked(object sender, RoutedEventArgs e)
@@ -367,51 +399,41 @@ namespace CSharp1
                 }
             }
             //
-
-            for (int x = 0; x < 10; x++)
+            for (int x = 0; x < numchannels; x++)
             {
                 room[x].pattern_load_struct(tabentry);
                 //room[x].slider[1].SetValue(room[x].thepattern.int_vs[tabentry]));
                 room[x].slider[1].Value = room[x].thepattern.int_vs[tabentry];
                 room[x].slider[2].Value = room[x].thepattern.int_sl2[tabentry];
-                //room[x]->vol_slider->setValue(room[x]->thepattern.int_vs[tabentry]);
-
+             
                 room[x].prg = room[x].thepattern.int_prg[tabentry];
-                // room[x]->prg = room[x]->thepattern.int_prg[tabentry];
-
+               
                 room[x].bank = room[x].thepattern.int_bnk[tabentry];
-                //room[x]->bank = room[x]->thepattern.int_bnk[tabentry];
-
-
+              
                 bankchangeme(x, room[x].bank);
                 prgchangeme(x, room[x].prg);
                 vol_value(x, room[x].thepattern.int_vs[tabentry]);
-                //vol_value(x, room[x]->vol_slider->value());
-
-                //  qDebug()<<"X:"<<x<<"tabentry:"<<tabentry;
+                bnkText.Text = room[activechannel].bank.ToString();
+                prgText.Text = room[activechannel].prg.ToString();
             }
-
-
-
         }
-        public void bpm_value(int thevalue)
+        public static void bpm_value(int thevalue)
         {
-            //playsequence.thebpm = thevalue;
-            //playsequence.ms = ((60000.0 / (double)thevalue) / (double)4);
-            //playsequence.dur = playsequence.ms;
-
-
+            playsequence.thebpm = thevalue;
+            playsequence.ms = ((60000.0 / (double)thevalue) / (double)4);
+            playsequence.dur = playsequence.ms;
+            Debug.WriteLine("MS: " + playsequence.ms);
         }
         public static void vol_value(int x, int v)
         {
             IMidiMessage midiMessageToSend = new MidiControlChangeMessage((byte)x, 7, (byte)v);
-           // midiOutPort.SendMessage(midiMessageToSend);
+            midiOutPort.SendMessage(midiMessageToSend);
         }
 
         public static void prgchangeme(int x, int prg)
         {
             IMidiMessage midiMessageToSend1 = new MidiProgramChangeMessage((byte)x, (byte)prg);
-            //midiOutPort.SendMessage(midiMessageToSend1);
+            midiOutPort.SendMessage(midiMessageToSend1);
         }
 
         public static void bankchangeme(int x, int bank)
@@ -422,75 +444,45 @@ namespace CSharp1
             //  byte prg = (byte)room[x].prg;
             IMidiMessage midiMessageToSend = new MidiControlChangeMessage(channel, controller, controlValue);
             // IMidiMessage midiMessageToSend1 = new MidiProgramChangeMessage(channel, prg);
-
-           // midiOutPort.SendMessage(midiMessageToSend);
-            
-            
+            midiOutPort.SendMessage(midiMessageToSend);
             //  midiOutPort.SendMessage(midiMessageToSend1);
         }
         public void checkit()
-        {
-            //  Debug.WriteLine("CHECK IT !!!!!!!!!!!!!!!!!! : " +room[1].bu[0, 1].IsChecked);
+        {          
               Debug.WriteLine("CHECK IT !!!!!!!!!!!!!!!!!! : " );
-          //  Debug.WriteLine("ROOM: " + (bool)room[0].bu[0, 0].IsChecked);
+              Debug.WriteLine(room[0].thepattern.vec_bs1[0, 0]);
         }
-
         public  void sendMidiMessage(int i, int j, int index)
         {
-            // Debug.WriteLine("DELEGIERT + ");
-            // Debug.WriteLine("HOHO:" + room[i].bu[j, index].IsChecked);
-            // Debug.WriteLine("HOHO:" + room[1].bu[0, 1].IsChecked);
-            //Debug.WriteLine("DDD " + i +" "+j+" "+index);
-
-            //Debug.WriteLine("ROOM: " + room[i].thepattern.vec_bs1[j,index]);
+           
             for (int x = 0; x < 15; x++)
             {
-                //  midi.sendMsg(176 + j | 123 << 8 | 0 << 16);  // ALL NOTES OF
+               // ALL NOTES OF
                 IMidiMessage midiMessageToSend = new MidiControlChangeMessage((byte)(x), (byte)123, (byte)0);
                 midiOutPort.SendMessage(midiMessageToSend);
             }
-           // Debug.WriteLine("Index: " + room[i].thepattern.vec_bs1[j,index]);
-            Debug.WriteLine("Index: " + index);
-
+          
             for (int x = 0; x < 10; x++)
             {
                 for (int y = 0; y < 5; y++)
-                {
-                    if (room[x].thepattern.vec_bs1[y, index] == 1)
-                    {
-                        Debug.WriteLine("IndexXXX: " + index);
-                       
+                {                 
+                    if (room[x].thepattern.vec_bs1[y,index] == 1)
+                    {                   
                         byte channel = (byte)x;
                         byte note = (byte)(35 + y);
                         byte velocity = 100;
 
                         IMidiMessage midiMessageToSend = new MidiNoteOnMessage(channel, note, velocity);
-
                         midiOutPort.SendMessage(midiMessageToSend);
                     }
-                    Debug.WriteLine("X: " +x + " Y: " +y + "Index:" +index + " Value:" + room[x].thepattern.vec_bs1[y, index]);
-
                 }
             }
-            //   Debug.WriteLine("ROOM: " + (bool)room[0].bu[i, j].IsChecked);
-
-            // {
-            // midi.sendMsg(0x90 + i | (35 + j) << 8 | 64 << 16);
-
-            //  IMidiMessage midiMessageToSend = new MidiNoteOnMessage(channel, note, velocity);
-
-            //  midiOutPort.SendMessage(midiMessageToSend);
-            // checkit();
-            // Debug.WriteLine("DELEGIERT");
             DoSomething((short)index);
-            //  }
         }
-
         private void HandlesavePatternChecked(object sender, RoutedEventArgs e)
         {
             // ToggleButton toggle = sender as ToggleButton;
             // int m = (int)toggle.Tag;
-
             for (int x = 0; x < 10; x++)
             {
                 room[x].pattern_save_struct(tabentry);
@@ -498,17 +490,13 @@ namespace CSharp1
                 room[x].thepattern.int_sl2[tabentry] = (int)room[x].slider[2].Value;
                 room[x].thepattern.int_prg[tabentry] = room[x].prg;
                 room[x].thepattern.int_bnk[tabentry] = room[x].bank;
-                // qDebug()<<"X:"<<x<<"tabentry:"<<tabentry;
+              
             }
-
-            //    throw new NotImplementedException();
         }
-
         private void HandleChannelSelUnChecked(object sender, RoutedEventArgs e)
         {
             // throw new NotImplementedException();
         }
-
         private void HandleChannelSelChecked(object sender, RoutedEventArgs e)
         {
             ToggleButton toggle = sender as ToggleButton;
@@ -519,54 +507,22 @@ namespace CSharp1
                 {
                     room[i].uniformGrid1.Visibility = Visibility.Collapsed;
                     room[i].uniformGrid2.Visibility = Visibility.Collapsed;
-                    //   throw new NotImplementedException();
                     channelSel[i].IsChecked = false;
                 }
             }
+            Debug.WriteLine("ACTIVECHANNEL:" + activechannel);
             activechannel = m;
             //channelSel[m].IsChecked = true;
             room[m].uniformGrid1.Visibility = Visibility.Visible;
             room[m].uniformGrid2.Visibility = Visibility.Visible;
+            bnkText.Text = room[activechannel].bank.ToString();
+            prgText.Text = room[activechannel].prg.ToString();
         }
 
         private void Slider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
-            // throw new NotImplementedException();
             var client = sliderclientDict[sender as Slider];
-            //  Debug.WriteLine(client);
-        }
-
-        private void HandleToggleButtonUnChecked(object sender, RoutedEventArgs e)
-        {
-            //  ToggleButton toggle = sender as ToggleButton;
-            MyToggle toggle = sender as MyToggle;
-            toggle.state = 0;
-            // toggle.Background = new SolidColorBrush(Windows.UI.Colors.Green);
-            //throw new NotImplementedException();
-            Debug.WriteLine("isChecked:" + toggle.IsChecked);
-            Debug.WriteLine("State:" + toggle.state);
-        }
-
-
-
-        private void HandleToggleButtonChecked(object sender, RoutedEventArgs e)
-        {
-            // ToggleButton toggle = sender as ToggleButton;
-            MyToggle toggle = sender as MyToggle;
-            //  toggle.Background = new SolidColorBrush(Windows.UI.Colors.Yellow);
-            //  throw new NotImplementedException();
-            toggle.state = 1;
-            Debug.WriteLine(toggle.Resources.Values);
-            Debug.WriteLine("isChecked:" + toggle.IsChecked);
-            Debug.WriteLine("State:" + toggle.state);
-        }
-
-        private void HandleButtonClick(object sender, RoutedEventArgs e)
-        {
-            //throw new NotImplementedException();
-            var client = clientDict[sender as ToggleButton];
-            Debug.WriteLine(client.Item1 + " " + client.Item2);
-
+            
         }
 
         //private async void Button_Click(object sender, RoutedEventArgs e)
@@ -578,18 +534,11 @@ namespace CSharp1
             // mediaElement.SetSource(stream, stream.ContentType);
             //  mediaElement.Play();
             Debug.WriteLine("Servas Wöd, I brauch a göd!");
-
-
-
         }
-
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-
             vis = !vis;
             Console.WriteLine("Servas Wöd, I brauch a göd!");
-            // if (vis != true) { ButtonsUniformGrid.Visibility = Visibility.Collapsed; } else { ButtonsUniformGrid.Visibility = Visibility.Visible; }
-            // if (vis != true) { my.Visibility = Visibility.Visible; } else { my.Visibility = Visibility.Collapsed; }
             if (vis != true) { room[0].uniformGrid1.Visibility = Visibility.Collapsed; } else { room[0].uniformGrid1.Visibility = Visibility.Visible; }
         }
 
@@ -597,13 +546,6 @@ namespace CSharp1
         public void DoSomething(short step)
         // public static void DoSomething(short step)
         {
-
-
-
-            //  var frame = (Frame)Window.Current.Content;
-            //  var page = (MainPage)frame.Content;
-
-
            // await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
               Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
             {
@@ -623,8 +565,7 @@ namespace CSharp1
             });
         }
 
-
-        //***************UWP MIDI
+       //***************UWP MIDI
         private async Task EnumerateMidiInputDevices()
         {
             // Find all input MIDI devices
@@ -648,8 +589,6 @@ namespace CSharp1
             }
             this.midiInPortListBox.IsEnabled = true;
         }
-
-
         private async Task EnumerateMidiOutputDevices()
         {
 
@@ -674,7 +613,6 @@ namespace CSharp1
             }
             this.midiOutPortListBox.IsEnabled = true;
         }
-
         private async void midiInPortListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var deviceInformationCollection = inputDeviceWatcher.DeviceInformationCollection;
@@ -700,7 +638,6 @@ namespace CSharp1
             }
             midiInPort.MessageReceived += MidiInPort_MessageReceived;
         }
-
         private void MidiInPort_MessageReceived(MidiInPort sender, MidiMessageReceivedEventArgs args)
         {
             IMidiMessage receivedMidiMessage = args.Message;
@@ -714,7 +651,6 @@ namespace CSharp1
                 System.Diagnostics.Debug.WriteLine(((MidiNoteOnMessage)receivedMidiMessage).Velocity);
             }
         }
-
         private async void midiOutPortListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var deviceInformationCollection = outputDeviceWatcher.DeviceInformationCollection;
@@ -725,6 +661,32 @@ namespace CSharp1
             }
 
             DeviceInformation devInfo = deviceInformationCollection[midiOutPortListBox.SelectedIndex];
+
+            if (devInfo == null)
+            {
+                return;
+            }
+
+            midiOutPort = await MidiOutPort.FromIdAsync(devInfo.Id);
+
+            if (midiOutPort == null)
+            {
+                System.Diagnostics.Debug.WriteLine("Unable to create MidiOutPort from output device");
+                return;
+            }
+
+        }
+
+        private async void midiOut1()
+        {
+            var deviceInformationCollection = outputDeviceWatcher.DeviceInformationCollection;
+
+            if (deviceInformationCollection == null)
+            {
+                return;
+            }
+
+            DeviceInformation devInfo = deviceInformationCollection[1];
 
             if (devInfo == null)
             {
@@ -771,6 +733,11 @@ namespace CSharp1
             }
         }
 
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+            //Debug.WriteLine("X: " + x + " Y: " + y + "Index:" + index + " Value:" + room[x].thepattern.vec_bs1[y, index]);
+            Debug.WriteLine(room[0].thepattern.vec_bs1[0, 0]);
+        }
     }
 }
 
