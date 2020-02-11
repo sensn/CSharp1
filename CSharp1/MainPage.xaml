@@ -10,7 +10,36 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid x:Name="thegrid" Margin="0,0,0,0">
-     
+        <NavigationView x:Name="nvTopLevelNav"
+                Loaded="nvTopLevelNav_Loaded"
+                Margin="15,12,15,12"
+               Grid.RowSpan="4"
+               Grid.ColumnSpan="1"
+               CompactModeThresholdWidth="0"
+                SelectionChanged="nvTopLevelNav_SelectionChanged"
+                ItemInvoked="nvTopLevelNav_ItemInvoked"
+                IsTabStop="False"
+                      
+                PaneDisplayMode="Top"
+                        IsBackButtonVisible="Collapsed"
+
+                Header="">
+            <NavigationView.MenuItems>
+                <NavigationViewItem Icon="Home" Content="Home" Tag="Home_Page" />
+                <NavigationViewItem Icon="Shop" Content="Shop" Tag="Shop_Page" />
+                <NavigationViewItem Content="Shopping Cart" Tag="Cart_Page">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="  [Insert Hex Decimal Value Here. See Segoe MDL2 below for details.]  "/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Icon="Message" Content="Message" Tag="Message_Page" />
+                <NavigationViewItem Icon="Print" Content="Print" Tag="Print_Page" />
+            </NavigationView.MenuItems>
+            <Frame x:Name="contentFrame"></Frame>
+        </NavigationView>
+
+
+
     </Grid>
 
 

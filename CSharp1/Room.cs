@@ -16,12 +16,14 @@ namespace CSharp1
     {
         public UniformGrid uniformGrid1 = new UniformGrid();
         public UniformGrid uniformGrid2 = new UniformGrid();
+        public UniformGrid uniformGrid3 = new UniformGrid();
         public bool vis = true;
 
         public Dictionary<MyToggle, Tuple<int,int>> clientDict = new Dictionary<MyToggle, Tuple<int,int>>();
         public Dictionary<Slider, int> sliderclientDict = new Dictionary<Slider,int>();
 
         public  MyToggle[,] bu = new MyToggle[5, 16];
+        public  MyToggle[] mute_bu = new MyToggle[5];
         public Slider[] slider = new Slider[3];
 
         // public Button[] prgButton = new Button[2];
@@ -40,41 +42,34 @@ namespace CSharp1
             // public List<int> int_tempo;
 
             public int[,] vec_bs1 ;
+            public int[] vec_m_bs1 ;
             //public List<int> vec_bs1;
             public List<int> vec_bs;
+            public List<int> vec_m_bs;
             public List<int> int_vs;
             public List<int> int_bnk;
             public List<int> int_prg;
             public List<int> int_sl2;
         };
         public pattern thepattern = new pattern();
-       //  List<int> vec_bs;
-       
+        //  List<int> vec_bs;
+
         public Room()
         {
             vec_bs2 = new int[5, 16];
             //  thepattern = new pattern();
             // thepattern.vec_bs = new List<int>(10000);
             // thepattern.vec_bs = new List<int>(5*16*10);
-            thepattern.vec_bs1 = new int[5,16];
-           //thepattern.vec_bs1 = new List<int>(5 * 16 * 10);
-           thepattern.vec_bs = new List<int>(5 * 16 * 10);
-           thepattern.int_bnk = new List<int>(10);
-           thepattern.int_prg = new List<int>(10);
-            
+            thepattern.vec_bs1 = new int[5, 16];
+            thepattern.vec_m_bs1 = new int[5];
+            //thepattern.vec_bs1 = new List<int>(5 * 16 * 10);
+            thepattern.vec_bs = new List<int>(5 * 16 * 10);
+            thepattern.vec_m_bs = new List<int>(5*10);
+            thepattern.int_bnk = new List<int>(10);
+            thepattern.int_prg = new List<int>(10);
+
             thepattern.int_vs = new List<int>(10);
             thepattern.int_sl2 = new List<int>(10);
-
-
-            //for (int i = 0; i < 5; i++)
-            //{
-            //    for (int j = 0; j < 16; j++)
-            //    {
-            //       thepattern.vec_bs1[i, j] = 1;
-            //    }
-            //}
-
-
 
             for (int i = 0; i < 10; i++)
             {
@@ -84,16 +79,17 @@ namespace CSharp1
                 thepattern.int_prg.Add(0);
 
             }
-
-                for (int i = 0; i < (5*16*10); i++)
+            for (int i = 0; i < 5*10; i++)
             {
-               // Debug.WriteLine("LOOP" + i);
-               thepattern.vec_bs.Add(0);
-              //  thepattern.vec_bs.Add(0);
+                thepattern.vec_m_bs.Add(0);
             }
-          
 
-
+            for (int i = 0; i < (5 * 16 * 10); i++)
+            {
+                // Debug.WriteLine("LOOP" + i);
+                thepattern.vec_bs.Add(0);
+                //  thepattern.vec_bs.Add(0);
+            }
 
             uniformGrid1.Columns = 16;
             uniformGrid1.Rows = 5;
@@ -108,9 +104,20 @@ namespace CSharp1
             uniformGrid2.RowSpacing = 4;
             uniformGrid2.Orientation = Orientation.Horizontal;
 
+            uniformGrid3.Columns = 1;
+            uniformGrid3.Rows = 5; 
+            uniformGrid3.Margin = new Thickness(15, 0, 15, 0);
+            //uniformGrid3.Margin = new Thickness(15, 15, 15, 15);
+
+            uniformGrid3.ColumnSpacing = 4;
+            uniformGrid3.RowSpacing = 4;
+            uniformGrid3.Orientation = Orientation.Vertical;
+
+
             uniformGrid1.Visibility = Visibility.Collapsed;
             uniformGrid2.Visibility = Visibility.Collapsed;
-            
+            uniformGrid3.Visibility = Visibility.Collapsed;
+
 
             for (int i = 0; i < 5; i++)
                 for (int j = 0; j < 16; j++)
@@ -135,6 +142,18 @@ namespace CSharp1
                 }
             //bu[1, 1].state = 1;
             //bu[1, 1].update();
+
+            for (int i = 0; i < 5; i++) { 
+                mute_bu[i] = new MyToggle();
+                mute_bu[i].Checked += HandleMuteButtonChecked;
+                mute_bu[i].Unchecked += HandleMuteButtonUnChecked;
+                mute_bu[i].HorizontalAlignment = HorizontalAlignment.Stretch;
+                mute_bu[i].VerticalAlignment = VerticalAlignment.Stretch;
+                mute_bu[i].Tag = i;
+               //mute_bu[i].IsThreeState = false;
+               // b.IsThreeState = true;
+               uniformGrid3.Children.Add(mute_bu[i]);
+            }
 
             for (int i = 0; i < 3; i++)
             {
@@ -174,22 +193,35 @@ namespace CSharp1
 
         }
 
+        private void HandleMuteButtonUnChecked(object sender, RoutedEventArgs e)
+        {
+            ToggleButton toggle = sender as ToggleButton;
+            int m = (int)toggle.Tag;
+            thepattern.vec_m_bs1[m] = 0;
+        }
+
+        private void HandleMuteButtonChecked(object sender, RoutedEventArgs e)
+        {
+            ToggleButton toggle = sender as ToggleButton;
+            int m = (int)toggle.Tag;
+            thepattern.vec_m_bs1[m] = 1;
+        }
+
         public void pattern_load_struct(int tabentry)
         {
             for (int i = 0; i < 5; i++)
             {
                 for (int j = 0; j < 16; j++)
                 {
-                     thepattern.vec_bs1[i, j]  = thepattern.vec_bs[(j) + (i * 16) + ((80) * tabentry)];
-                  
-                    
-                    bu[i,j].IsChecked = thepattern.vec_bs1[i, j] != 0 ;  // INT TO BOOl
-                   
-                    
-                    //bu[i,j].IsChecked = thepattern.vec_bs[(j) + (i * 16) + ((80) * tabentry)] != 0 ;  // INT TO BOOl
-                  
-
+                    thepattern.vec_bs1[i, j] = thepattern.vec_bs[(j) + (i * 16) + ((80) * tabentry)];
+                    bu[i, j].IsChecked = thepattern.vec_bs1[i, j] != 0;  // INT TO        
+                    //bu[i,j].IsChecked = thepattern.vec_bs[(j) + (i * 16) + ((80) * tabentry)] != 0 ;  // INT TO  
                 }
+            }
+            for (int i = 0; i < 5; i++)
+            {
+                thepattern.vec_m_bs1[i] = thepattern.vec_m_bs[(i) + ((5) * tabentry)];
+                mute_bu[i].IsChecked = thepattern.vec_m_bs1[i] != 0;
             }
         }
         public void pattern_save_struct(int tabentry)
@@ -213,7 +245,10 @@ namespace CSharp1
                     //qDebug()<<"IDD:" << (i)+(j*16)+((128)*tabentry);
                 }
             }
-
+            for (int i = 0; i < 5; i++)
+            {
+               thepattern.vec_m_bs[(i) + ((5) * tabentry)] = thepattern.vec_m_bs1[i];
+            }
 
 
         }

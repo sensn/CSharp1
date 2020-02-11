@@ -78,7 +78,8 @@ namespace CSharp1
                     // und die neue Seite konfigurieren, indem die erforderlichen Informationen als Navigationsparameter
                     // übergeben werden
                     //rootFrame.Navigate(typeof(MainPage), e.Arguments);
-                    rootFrame.Navigate(typeof(BlankPage1), e.Arguments);
+                    rootFrame.Navigate(typeof(MainPage), e.Arguments);
+                   // rootFrame.Navigate(typeof(BlankPage1), e.Arguments);
                 }
                 // Sicherstellen, dass das aktuelle Fenster aktiv ist
                 Window.Current.Activate();

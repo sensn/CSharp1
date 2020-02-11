@@ -45,30 +45,32 @@ namespace CSharp1
 
             //prgButton[0].Visibility = Visibility.Collapsed;
             InitializeComponent();
-         //   playsequence = new Worker();
-         //   mypage = new BlankPage1();
-         //   //Frame theframe = new Frame();
-         //   //theframe = Window.Current.Content as Frame;
-         //   // theframe.Navigate(typeof(BlankPage1));
-         //   //Window.Current.Content = theframe;
 
-            
-         //   //playsequence = new Worker(mypage.room);
-            
+        
+            //   playsequence = new Worker();
+            //   mypage = new BlankPage1();
+            //   //Frame theframe = new Frame();
+            //   //theframe = Window.Current.Content as Frame;
+            //   // theframe.Navigate(typeof(BlankPage1));
+            //   //Window.Current.Content = theframe;
 
-         ////   Worker.LogHandler myLogger = new Worker.LogHandler(BlankPage1.sendMidiMessage);
-         //   Worker.LogHandler myLogger = new Worker.LogHandler(mypage.sendMidiMessage);
-         //  // Worker.LogHandler myLogger = new Worker.LogHandler(BlankPage1.sendMidiMessage);
-         //   playsequence.myLogger1 = myLogger;
 
-         //   Action<object> action = (object obj) =>
-         //   {
+            //   //playsequence = new Worker(mypage.room);
 
-         //       Console.WriteLine("Task={0}, obj={1}, Thread={2}",
-         //       Task.CurrentId, obj,
-         //       Thread.CurrentThread.ManagedThreadId);
-         //       playsequence.mythread1();
-         //   };
+
+            ////   Worker.LogHandler myLogger = new Worker.LogHandler(BlankPage1.sendMidiMessage);
+            //   Worker.LogHandler myLogger = new Worker.LogHandler(mypage.sendMidiMessage);
+            //  // Worker.LogHandler myLogger = new Worker.LogHandler(BlankPage1.sendMidiMessage);
+            //   playsequence.myLogger1 = myLogger;
+
+            //   Action<object> action = (object obj) =>
+            //   {
+
+            //       Console.WriteLine("Task={0}, obj={1}, Thread={2}",
+            //       Task.CurrentId, obj,
+            //       Thread.CurrentThread.ManagedThreadId);
+            //       playsequence.mythread1();
+            //   };
 
 
             // Creating thread
@@ -91,13 +93,30 @@ namespace CSharp1
 
             // Crate an instance of the delegate, pointing to the Logger()
             // function on the fl instance of a FileLogger.
-           
-           // playsequence.Process(myLogger);
+
+            // playsequence.Process(myLogger);
             //fl.Close();
 
 
 
 
         }
+
+
+        #region NavigationView event handlers
+        private void nvTopLevelNav_Loaded(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void nvTopLevelNav_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        {
+        }
+
+        private void nvTopLevelNav_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+        {
+        }
+        #endregion
+
+
     }
 }

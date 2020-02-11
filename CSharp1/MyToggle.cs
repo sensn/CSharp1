@@ -21,6 +21,7 @@ namespace CSharp1
         public MyToggle()
         {            
             Background = new SolidColorBrush(Windows.UI.Colors.DarkGray);
+             
           //  Foreground = new SolidColorBrush(Windows.UI.Colors.DarkRed);
            // FlatStyle = FlatStyle.Flat;
            // Size = new Size(LEDWidth, LEDHeight);

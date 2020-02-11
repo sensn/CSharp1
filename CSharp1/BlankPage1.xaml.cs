@@ -72,6 +72,7 @@ namespace CSharp1
 
         //public Worker playsequence;
         public static Worker playsequence;
+        public static bool midiset = false;
         public BlankPage1()
         {
             InitializeComponent();
@@ -95,33 +96,13 @@ namespace CSharp1
             };
 
 
-            // Creating thread
-            //  Using thread class
-
-            //Thread thr = new Thread(new ThreadStart(playsequence.mythread1));
-            //thr.Start();
-
             Task t1 = new Task(action, "alpha");
             t1.Start();
             Console.WriteLine("t1 has been launched. (Main Thread={0})",
                               Thread.CurrentThread.ManagedThreadId);
-            // startPlaySequence();
 
-
-
-            //playsequence = new Worker();
-
-            //Action<object> action = (object obj) =>
-            //{
-
-            //    Console.WriteLine("Task={0}, obj={1}, Thread={2}",
-            //    Task.CurrentId, obj,
-            //    Thread.CurrentThread.ManagedThreadId);
-            //    playsequence.mythread1();
-            //};
             //// Creating thread 
             //// Using thread class 
-
             //// Thread thr = new Thread(new ThreadStart(playsequence.mythread1));
             //// thr.Start();
 
@@ -136,10 +117,11 @@ namespace CSharp1
                 new MyMidiDeviceWatcher(MidiOutPort.GetDeviceSelector(), midiOutPortListBox, Dispatcher);
 
             outputDeviceWatcher.StartWatcher();
-
+            //midiOutPortListBox.SelectedIndex = 0;
+         
             //*****MIDI END
 
-           // midiOutPortListBox.SelectedIndex = 0;
+            // midiOutPortListBox.SelectedIndex = 0;
 
             //System.Threading.Tasks.Task task1 = new Task(DoSomething);
             //task1.Start();
@@ -158,11 +140,14 @@ namespace CSharp1
                 room[i].channel = i;
                 thegrid.Children.Add(room[i].uniformGrid1);
                 thegrid.Children.Add(room[i].uniformGrid2);
+                thegrid.Children.Add(room[i].uniformGrid3);
 
-                Grid.SetColumn(room[i].uniformGrid1, 0);     //ToggleButtonMatrix
+                Grid.SetColumn(room[i].uniformGrid1, 1);     //ToggleButtonMatrix
                 Grid.SetRow(room[i].uniformGrid1, 1);
-                Grid.SetColumn(room[i].uniformGrid2, 1);     //Sliders
-                Grid.SetRow(room[i].uniformGrid2, 1);
+                Grid.SetColumn(room[i].uniformGrid2, 2);     //Sliders
+                Grid.SetRow(room[i].uniformGrid2, 1);  
+                Grid.SetColumn(room[i].uniformGrid3, 0);     //Sliders
+                Grid.SetRow(room[i].uniformGrid3, 1);
                 //  Grid.SetRowSpan(room[i].uniformGrid2, 2);    //Slider Stretch Vertically
 
                 //****
@@ -176,7 +161,7 @@ namespace CSharp1
 
                 ButtonsUniformGrid_Copy.Children.Add(channelSel[i]);
             }
-
+            //channelSel[0].IsChecked = true;
 
             for (int i = 0; i < 16; i++)
             {
@@ -274,7 +259,7 @@ namespace CSharp1
                 saveSlot[i].Tag = i;
                 ButtonsUniformGrid_Copy1.Children.Add(saveSlot[i]);
             }
-
+           // saveSlot[0].IsChecked = true;
             for (int i = 0; i < 3; i++)
             {
                 Border myspacer1 = new Border();
@@ -305,7 +290,7 @@ namespace CSharp1
                 loadSlot[i].Tag = i;
                 ButtonsUniformGrid_Copy1.Children.Add(loadSlot[i]);
             }
-
+            //loadSlot[0].IsChecked = true;
             for (int i = 0; i < 3; i++)
             {
                 Border myspacer1 = new Border();
@@ -320,11 +305,13 @@ namespace CSharp1
             ButtonsUniformGrid_Copy1.Children.Add(loadFromDBButton);
 
 
-
             room[0].uniformGrid1.Visibility = Visibility.Visible;
             room[0].uniformGrid2.Visibility = Visibility.Visible;
-           // midiOut1();
-          //  checkit();
+            room[0].uniformGrid3.Visibility = Visibility.Visible;
+
+        
+            // midiOut1();
+            //  checkit();
         }  // public MAINPAGE
 
         
@@ -380,9 +367,16 @@ namespace CSharp1
 
         private void HandleplayButtonClicked(object sender, RoutedEventArgs e)
         {
-          //  this.Frame.Navigate(typeof(BlankPage1));
+            //  this.Frame.Navigate(typeof(BlankPage1));
+          //  Debug.WriteLine(" SELECTED: "+ midiOutPortListBox.SelectedIndex);
+            if (!midiset && midiOutPortListBox.SelectedIndex == -1) {
+                midiOutPortListBox.SelectedIndex = 0; 
+                //midiOut1();
+                midiset = true; }
+
             playsequence.isplaying = !playsequence.isplaying;
-            Debug.WriteLine("PLAY");
+           // Debug.WriteLine("PLAY");
+           // Debug.WriteLine("MIDI ITEMS: " + midiOutPortListBox.Items.Count);
         }
 
         private void HandleloadSlotChecked(object sender, RoutedEventArgs e)
@@ -422,7 +416,7 @@ namespace CSharp1
             playsequence.thebpm = thevalue;
             playsequence.ms = ((60000.0 / (double)thevalue) / (double)4);
             playsequence.dur = playsequence.ms;
-            Debug.WriteLine("MS: " + playsequence.ms);
+          //  Debug.WriteLine("MS: " + playsequence.ms);
         }
         public static void vol_value(int x, int v)
         {
@@ -466,7 +460,7 @@ namespace CSharp1
             {
                 for (int y = 0; y < 5; y++)
                 {                 
-                    if (room[x].thepattern.vec_bs1[y,index] == 1)
+                    if (room[x].thepattern.vec_bs1[y,index] == 1 && room[x].thepattern.vec_m_bs1[y]== 1)
                     {                   
                         byte channel = (byte)x;
                         byte note = (byte)(35 + y);
@@ -507,6 +501,7 @@ namespace CSharp1
                 {
                     room[i].uniformGrid1.Visibility = Visibility.Collapsed;
                     room[i].uniformGrid2.Visibility = Visibility.Collapsed;
+                    room[i].uniformGrid3.Visibility = Visibility.Collapsed;
                     channelSel[i].IsChecked = false;
                 }
             }
@@ -515,6 +510,7 @@ namespace CSharp1
             //channelSel[m].IsChecked = true;
             room[m].uniformGrid1.Visibility = Visibility.Visible;
             room[m].uniformGrid2.Visibility = Visibility.Visible;
+            room[m].uniformGrid3.Visibility = Visibility.Visible;
             bnkText.Text = room[activechannel].bank.ToString();
             prgText.Text = room[activechannel].prg.ToString();
         }
@@ -686,7 +682,7 @@ namespace CSharp1
                 return;
             }
 
-            DeviceInformation devInfo = deviceInformationCollection[1];
+            DeviceInformation devInfo = deviceInformationCollection[0];
 
             if (devInfo == null)
             {
@@ -738,6 +734,24 @@ namespace CSharp1
             //Debug.WriteLine("X: " + x + " Y: " + y + "Index:" + index + " Value:" + room[x].thepattern.vec_bs1[y, index]);
             Debug.WriteLine(room[0].thepattern.vec_bs1[0, 0]);
         }
+        ////   NAVIGATION MENU
+        ///
+        #region NavigationView event handlers
+        private void nvTopLevelNav_Loaded(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void nvTopLevelNav_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        {
+        }
+
+        private void nvTopLevelNav_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+        {
+        }
+        #endregion
+
+
+
     }
 }
 
