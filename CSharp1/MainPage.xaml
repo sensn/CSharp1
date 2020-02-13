@@ -12,38 +12,39 @@
     <Grid x:Name="thegrid" Margin="0,0,0,0">
         <NavigationView x:Name="nvTopLevelNav"
                 Loaded="nvTopLevelNav_Loaded"
-                Margin="15,12,15,12"
-               Grid.RowSpan="4"
-               Grid.ColumnSpan="1"
-               CompactModeThresholdWidth="0"
+                Margin="0,0,0,0"
+               
                 SelectionChanged="nvTopLevelNav_SelectionChanged"
                 ItemInvoked="nvTopLevelNav_ItemInvoked"
                 IsTabStop="False"
                       
-                PaneDisplayMode="Top"
-                        IsBackButtonVisible="Collapsed"
+                PaneDisplayMode="Auto"
+                IsBackButtonVisible="Collapsed"
 
-                Header="">
+                Header="Menu">
             <NavigationView.MenuItems>
-                <NavigationViewItem Icon="Home" Content="Home" Tag="Home_Page" />
-                <NavigationViewItem Icon="Shop" Content="Shop" Tag="Shop_Page" />
-                <NavigationViewItem Content="Shopping Cart" Tag="Cart_Page">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="  [Insert Hex Decimal Value Here. See Segoe MDL2 below for details.]  "/>
-                    </NavigationViewItem.Icon>
+                <NavigationViewItem Icon="Home" Tag="Home_Page">
+                    <TextBlock Tag="Nav_Home">Home</TextBlock>
                 </NavigationViewItem>
-                <NavigationViewItem Icon="Message" Content="Message" Tag="Message_Page" />
-                <NavigationViewItem Icon="Print" Content="Print" Tag="Print_Page" />
+                <NavigationViewItem Icon="Shop" Tag="Shop_Page">
+                    <TextBlock Tag="Nav_Shop">Shop</TextBlock>
+                </NavigationViewItem>
+                <NavigationViewItem Tag="Cart_Page">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph=""/>
+                    </NavigationViewItem.Icon>
+                    <TextBlock Tag="Nav_ShopCart">Shopping Cart</TextBlock>
+                </NavigationViewItem>
+                <NavigationViewItem Icon="Message" Tag="Message_Page">
+                    <TextBlock Tag="Nav_Message">Message</TextBlock>
+                </NavigationViewItem>
+                <NavigationViewItem Icon="Print" Tag="Print_Page">
+                    <TextBlock Tag="Nav_Print">Print</TextBlock>
+                </NavigationViewItem>
             </NavigationView.MenuItems>
             <Frame x:Name="contentFrame"></Frame>
         </NavigationView>
 
-
-
     </Grid>
-
-
-
-
 
 </Page>

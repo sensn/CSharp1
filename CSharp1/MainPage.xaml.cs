@@ -26,6 +26,7 @@ using Windows.UI.Core;
 using Windows.Devices.Enumeration;
 using Windows.Devices.Midi;
 using System.Threading.Tasks;
+using CSharp1.Views;
 
 // Die Elementvorlage "Leere Seite" wird unter https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x407 dokumentiert.
 
@@ -106,6 +107,18 @@ namespace CSharp1
         #region NavigationView event handlers
         private void nvTopLevelNav_Loaded(object sender, RoutedEventArgs e)
         {
+            // set the initial SelectedItem
+            foreach (NavigationViewItemBase item in nvTopLevelNav.MenuItems)
+            {
+                if (item is NavigationViewItem && item.Tag.ToString() == "Home_Page")
+                {
+                    nvTopLevelNav.SelectedItem = item;
+                    break;
+                }
+            }
+            contentFrame.Navigate(typeof(BlankPage1));
+
+            nvTopLevelNav.IsPaneOpen = false;
         }
 
         private void nvTopLevelNav_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -114,6 +127,32 @@ namespace CSharp1
 
         private void nvTopLevelNav_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
+            TextBlock ItemContent = args.InvokedItem as TextBlock;
+            if (ItemContent != null)
+            {
+                switch (ItemContent.Tag)
+                {
+                    case "Nav_Home":
+                        contentFrame.Navigate(typeof(BlankPage1));
+                        break;
+
+                    case "Nav_Shop":
+                        contentFrame.Navigate(typeof(ShopPage));
+                        break;
+
+                    //case "Nav_ShopCart":
+                    //    contentFrame.Navigate(typeof(CartPage));
+                    //    break;
+
+                    //case "Nav_Message":
+                    //    contentFrame.Navigate(typeof(MessagePage));
+                    //    break;
+
+                    //case "Nav_Print":
+                    //    contentFrame.Navigate(typeof(PrintPage));
+                    //    break;
+                }
+            }
         }
         #endregion
 

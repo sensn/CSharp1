@@ -47,7 +47,7 @@ namespace CSharp1
         public UniformGrid my = new UniformGrid();
         public UniformGrid my1 = new UniformGrid();
 
-        public   Room[] room = new Room[10];
+        public Room[] room = new Room[10];
         public ToggleButton[] channelSel = new ToggleButton[10];
         public ToggleButton[] saveSlot = new ToggleButton[10];
         public ToggleButton[] loadSlot = new ToggleButton[10];
@@ -58,13 +58,11 @@ namespace CSharp1
         TextBlock prgText;
         TextBlock bnkText;
 
-
         MyMidiDeviceWatcher inputDeviceWatcher;
         MyMidiDeviceWatcher outputDeviceWatcher;
 
         public static MidiInPort midiInPort;
         public static IMidiOutPort midiOutPort;
-
 
         int tabentry = 0;
         int numentries = 10;
@@ -73,6 +71,8 @@ namespace CSharp1
         //public Worker playsequence;
         public static Worker playsequence;
         public static bool midiset = false;
+        private int tabentry_save;
+
         public BlankPage1()
         {
             InitializeComponent();
@@ -83,28 +83,32 @@ namespace CSharp1
           
              playsequence = new Worker();
             Worker.LogHandler myLogger = new Worker.LogHandler(sendMidiMessage);
+            Worker.LogHandler2 myLogger2 = new Worker.LogHandler2(DoSomething);
             // Worker.LogHandler myLogger = new Worker.LogHandler(BlankPage1.sendMidiMessage);
             playsequence.myLogger1 = myLogger;
+            playsequence.myLogger2 = myLogger2;
 
-            Action<object> action = (object obj) =>
-            {
+            //Action<object> action = (object obj) =>
+            //{
 
-                Console.WriteLine("Task={0}, obj={1}, Thread={2}",
-                Task.CurrentId, obj,
-                Thread.CurrentThread.ManagedThreadId);
-                playsequence.mythread1();
-            };
+            //    Console.WriteLine("Task={0}, obj={1}, Thread={2}",
+            //    Task.CurrentId, obj,
+            //    Thread.CurrentThread.ManagedThreadId);
+            //    playsequence.mythread1();
+            //};
 
 
-            Task t1 = new Task(action, "alpha");
-            t1.Start();
-            Console.WriteLine("t1 has been launched. (Main Thread={0})",
-                              Thread.CurrentThread.ManagedThreadId);
+            //Task t1 = new Task(action, "alpha");
+           
+            //t1.Start();
+            //Console.WriteLine("t1 has been launched. (Main Thread={0})",
+            //                  Thread.CurrentThread.ManagedThreadId);
 
-            //// Creating thread 
-            //// Using thread class 
-            //// Thread thr = new Thread(new ThreadStart(playsequence.mythread1));
-            //// thr.Start();
+            //Creating thread
+            // Using thread class
+             Thread thr = new Thread(new ThreadStart(playsequence.mythread1));
+              thr.Priority = ThreadPriority.Highest;
+             thr.Start();
 
             // DefaultLaunch();    //Launch a app from asociated filetype
             //****MIDI
@@ -162,7 +166,7 @@ namespace CSharp1
                 ButtonsUniformGrid_Copy.Children.Add(channelSel[i]);
             }
             //channelSel[0].IsChecked = true;
-
+            playsequence.settherooms(room);
             for (int i = 0; i < 16; i++)
             {
                 led[i] = new Rectangle();
@@ -319,7 +323,7 @@ namespace CSharp1
         {
             ToggleButton toggle = sender as ToggleButton;
             int m = (int)toggle.Tag;
-            tabentry = m;
+            tabentry_save = m;
             for (int i = 0; i < numchannels; i++)
             {
                 if (i != m)
@@ -370,8 +374,9 @@ namespace CSharp1
             //  this.Frame.Navigate(typeof(BlankPage1));
           //  Debug.WriteLine(" SELECTED: "+ midiOutPortListBox.SelectedIndex);
             if (!midiset && midiOutPortListBox.SelectedIndex == -1) {
-                midiOutPortListBox.SelectedIndex = 0; 
+                midiOutPortListBox.SelectedIndex = 0;
                 //midiOut1();
+                playsequence.setMidiout(midiOutPort);
                 midiset = true; }
 
             playsequence.isplaying = !playsequence.isplaying;
@@ -379,7 +384,7 @@ namespace CSharp1
            // Debug.WriteLine("MIDI ITEMS: " + midiOutPortListBox.Items.Count);
         }
 
-        private void HandleloadSlotChecked(object sender, RoutedEventArgs e)
+        private async void HandleloadSlotChecked(object sender, RoutedEventArgs e)
         {
             //  throw new NotImplementedException();
             ToggleButton toggle = sender as ToggleButton;
@@ -443,34 +448,34 @@ namespace CSharp1
         }
         public void checkit()
         {          
-              Debug.WriteLine("CHECK IT !!!!!!!!!!!!!!!!!! : " );
-              Debug.WriteLine(room[0].thepattern.vec_bs1[0, 0]);
+             // Debug.WriteLine("CHECK IT !!!!!!!!!!!!!!!!!! : " );
+            //  Debug.WriteLine(room[0].thepattern.vec_bs1[0, 0]);
         }
         public  void sendMidiMessage(int i, int j, int index)
         {
            
-            for (int x = 0; x < 15; x++)
-            {
-               // ALL NOTES OF
-                IMidiMessage midiMessageToSend = new MidiControlChangeMessage((byte)(x), (byte)123, (byte)0);
-                midiOutPort.SendMessage(midiMessageToSend);
-            }
+            //for (int x = 0; x < 15; x++)
+            //{
+            //   // ALL NOTES OF
+            //    IMidiMessage midiMessageToSend = new MidiControlChangeMessage((byte)(x), (byte)123, (byte)0);
+            //    midiOutPort.SendMessage(midiMessageToSend);
+            //}
           
-            for (int x = 0; x < 10; x++)
-            {
-                for (int y = 0; y < 5; y++)
-                {                 
-                    if (room[x].thepattern.vec_bs1[y,index] == 1 && room[x].thepattern.vec_m_bs1[y]== 1)
-                    {                   
-                        byte channel = (byte)x;
-                        byte note = (byte)(35 + y);
-                        byte velocity = 100;
+            //for (int x = 0; x < 10; x++)
+            //{
+            //    for (int y = 0; y < 5; y++)
+            //    {                 
+            //        if (room[x].thepattern.vec_bs1[y,index] == 1 && room[x].thepattern.vec_m_bs1[y]== 1)
+            //        {                   
+            //            byte channel = (byte)x;
+            //            byte note = (byte)(35 + y);
+            //            byte velocity = 100;
 
-                        IMidiMessage midiMessageToSend = new MidiNoteOnMessage(channel, note, velocity);
-                        midiOutPort.SendMessage(midiMessageToSend);
-                    }
-                }
-            }
+            //            IMidiMessage midiMessageToSend = new MidiNoteOnMessage(channel, note, velocity);
+            //            midiOutPort.SendMessage(midiMessageToSend);
+            //        }
+            //    }
+            //}
             DoSomething((short)index);
         }
         private void HandlesavePatternChecked(object sender, RoutedEventArgs e)
@@ -479,11 +484,11 @@ namespace CSharp1
             // int m = (int)toggle.Tag;
             for (int x = 0; x < 10; x++)
             {
-                room[x].pattern_save_struct(tabentry);
-                room[x].thepattern.int_vs[tabentry] = (int)room[x].slider[1].Value;
-                room[x].thepattern.int_sl2[tabentry] = (int)room[x].slider[2].Value;
-                room[x].thepattern.int_prg[tabentry] = room[x].prg;
-                room[x].thepattern.int_bnk[tabentry] = room[x].bank;
+                room[x].pattern_save_struct(tabentry_save);
+                room[x].thepattern.int_vs[tabentry_save] = (int)room[x].slider[1].Value;
+                room[x].thepattern.int_sl2[tabentry_save] = (int)room[x].slider[2].Value;
+                room[x].thepattern.int_prg[tabentry_save] = room[x].prg;
+                room[x].thepattern.int_bnk[tabentry_save] = room[x].bank;
               
             }
         }
@@ -505,7 +510,7 @@ namespace CSharp1
                     channelSel[i].IsChecked = false;
                 }
             }
-            Debug.WriteLine("ACTIVECHANNEL:" + activechannel);
+           // Debug.WriteLine("ACTIVECHANNEL:" + activechannel);
             activechannel = m;
             //channelSel[m].IsChecked = true;
             room[m].uniformGrid1.Visibility = Visibility.Visible;
@@ -529,7 +534,7 @@ namespace CSharp1
             //  Windows.Media.SpeechSynthesis.SpeechSynthesisStream stream = await synth.SynthesizeTextToStreamAsync("Servas Wöd, I brauch a göd!");
             // mediaElement.SetSource(stream, stream.ContentType);
             //  mediaElement.Play();
-            Debug.WriteLine("Servas Wöd, I brauch a göd!");
+          //  Debug.WriteLine("Servas Wöd, I brauch a göd!");
         }
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {

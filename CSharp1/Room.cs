@@ -230,19 +230,9 @@ namespace CSharp1
             {
                 for (int j = 0; j < 16; j++)
                 {
-                    //vec_bs[1] = 1;
-                    // thepattern.vec_bs[1] = 1;
-                    //this.thepattern.vec_bs[(i) + (j * 16) + ((128) * tabentry)] = 1;
-                    //int index = (j) + (i * 16) + ((80) * tabentry);
-                   // Debug.WriteLine("INDEXXX " + index);
-                  //  thepattern.vec_bs[(j) + (i * 16) + ((80) * tabentry)] = ((bool)bu[i,j].IsChecked) ? 1 : 0 ;
-                  
+                              
                     thepattern.vec_bs[(j) + (i * 16) + ((80) * tabentry)] = thepattern.vec_bs1[i,j];
-                    
-                    
-                    //query.bindValue(":rowid", ((i)+(j*16)+((128)*tabentry)+1));
-
-                    //qDebug()<<"IDD:" << (i)+(j*16)+((128)*tabentry);
+            
                 }
             }
             for (int i = 0; i < 5; i++)
@@ -252,9 +242,6 @@ namespace CSharp1
 
 
         }
-
-
-
         private void HandlebnkButtonClicked(object sender, RoutedEventArgs e)
         {
             //Button button = sender as Button;
@@ -292,11 +279,11 @@ namespace CSharp1
             toggle.state = 0;
             // toggle.Background = new SolidColorBrush(Windows.UI.Colors.Green);
             //throw new NotImplementedException();
-            Debug.WriteLine("isChecked:" + toggle.IsChecked);
-            Debug.WriteLine("State:" + toggle.state);
+          //  Debug.WriteLine("isChecked:" + toggle.IsChecked);
+          //  Debug.WriteLine("State:" + toggle.state);
 
             var client = clientDict[sender as MyToggle];
-            Debug.WriteLine(client.Item1 + " " + client.Item2);
+          // Debug.WriteLine(client.Item1 + " " + client.Item2);
             thepattern.vec_bs1[client.Item1, client.Item2] = 0;
             //throw new NotImplementedException();
         }
@@ -315,7 +302,7 @@ namespace CSharp1
           //  Debug.WriteLine("State:" + toggle.state);
 
             var client = clientDict[sender as MyToggle];
-            Debug.WriteLine(client.Item1 + " " + client.Item2);
+           // Debug.WriteLine(client.Item1 + " " + client.Item2);
             //  throw new NotImplementedException();
 
 
@@ -325,7 +312,7 @@ namespace CSharp1
           // this.vec_bs2[client.Item1, client.Item2] = 1;
             //bu[client.Item1, client.Item2].state = 1;
             //bu[client.Item1, client.Item2].update();
-            Debug.WriteLine("CHANNEL:" + channel + " VECBS! " + thepattern.vec_bs1[(int)client.Item1, (int) client.Item2]);
+           // Debug.WriteLine("CHANNEL:" + channel + " VECBS! " + thepattern.vec_bs1[(int)client.Item1, (int) client.Item2]);
 
             //  bu[client.Item1, client.Item2].update();
 
