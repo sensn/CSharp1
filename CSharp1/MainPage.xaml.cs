@@ -155,7 +155,10 @@ namespace CSharp1
             }
         }
         #endregion
-
+        public void SetSelectedNavigationItem(int index)
+        {
+            nvTopLevelNav.SelectedItem = nvTopLevelNav.MenuItems[index];
+        }
 
     }
 }

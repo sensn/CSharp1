@@ -26,6 +26,9 @@ using Windows.UI.Core;
 using Windows.Devices.Enumeration;
 using Windows.Devices.Midi;
 using System.Threading.Tasks;
+using Windows.UI.Popups;
+using System.Data;
+using System.Data.SqlClient;
 
 // Die Elementvorlage "Leere Seite" wird unter https://go.microsoft.com/fwlink/?LinkId=234238 dokumentiert.
 
@@ -80,8 +83,10 @@ namespace CSharp1
             this.NavigationCacheMode = Windows.UI.Xaml.Navigation.NavigationCacheMode.Enabled;
 
             Debug.WriteLine("Servas Wöd, I brauch a göd! CREATE TASK");
-          
-             playsequence = new Worker();
+            CommonData.SetConnection();   //CONNECT TO MS SQL SERVER
+            CommonData.create_SQL_Strings();
+            create_table();
+            playsequence = new Worker();
             Worker.LogHandler myLogger = new Worker.LogHandler(sendMidiMessage);
             Worker.LogHandler2 myLogger2 = new Worker.LogHandler2(DoSomething);
             // Worker.LogHandler myLogger = new Worker.LogHandler(BlankPage1.sendMidiMessage);
@@ -754,8 +759,93 @@ namespace CSharp1
         {
         }
         #endregion
-
-
+        /////SQLLLL
+        ///
+        public void fill_table() { }
+        public  void create_table()
+        {
+               SqlCommand myCommand = new SqlCommand();
+               SqlDataReader myReader = null;
+            
+               bool tableexisted = false;
+            try
+            {
+                //Commandtype --> Stored Procedure + Name der Prozedur angeben
+                //  myCommand.CommandText = "SELECT * FROM [TestDB].[dbo].[USERData]";
+                // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
+                myCommand.Connection = CommonData.MyCon.MyCon;
+                myCommand.CommandType = CommandType.Text;
+                myCommand.CommandText = " SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = 'TestDB'"; //GET TABLES IN DATABASE
+                CommonData.MyCon.openConnection();
+                myReader = myCommand.ExecuteReader();
+               
+                while (myReader.Read())
+                {
+                    Debug.WriteLine("HOHO" + myReader[0].ToString());
+                    if (CommonData.mytablename == myReader[0].ToString()) { tableexisted = true; } 
+                }
+               Console.WriteLine("HOHO" + myReader[0].ToString());
+                //Console.WriteLine(myReader[0].ToString() + "" + myReader[1].ToString());                       
+            }
+            catch (Exception ex)
+            {
+                // MessageBox.Show(ex.Message);
+              //  MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
+               // await dialog.ShowAsync();
+            }
+            finally
+            {
+                if (CommonData.MyCon.MyCon != null)
+                    CommonData.MyCon.closeConnection();
+            }
+            if (!tableexisted)
+            {
+                try
+                {
+                    myCommand.Connection = CommonData.MyCon.MyCon;
+                    myCommand.CommandType = CommandType.Text;
+                    myCommand.CommandText = "CREATE TABLE " + CommonData.mytablename + " (id INTEGER , " + CommonData.theColumms + ")"; //GET TABLES IN DATABASE
+                    CommonData.MyCon.openConnection();
+                    myReader = myCommand.ExecuteReader();
+                }
+                catch (Exception ex)
+                {
+                    // MessageBox.Show(ex.Message);
+                    //  MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
+                    // await dialog.ShowAsync();
+                }
+                finally
+                {
+                    if (CommonData.MyCon.MyCon != null)
+                        CommonData.MyCon.closeConnection();
+                }
+                //
+            }
+            else
+            {
+                try
+                {
+                    myCommand.Connection = CommonData.MyCon.MyCon;
+                    myCommand.CommandType = CommandType.Text;
+                    myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id," + CommonData.theColummsRaw + ")" + " VALUES (:id," + CommonData.theColummsVal + ")";
+                   
+                    CommonData.MyCon.openConnection();
+                    myReader = myCommand.ExecuteReader();
+                }
+                catch (Exception ex)
+                {
+                    // MessageBox.Show(ex.Message);
+                    //  MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
+                    // await dialog.ShowAsync();
+                }
+                finally
+                {
+                    if (CommonData.MyCon.MyCon != null)
+                        CommonData.MyCon.closeConnection();
+                }
+            }
+            //
+        }
 
     }
 }
