@@ -214,7 +214,7 @@ namespace CSharp1
                 for (int j = 0; j < 16; j++)
                 {
                     thepattern.vec_bs1[i, j] = thepattern.vec_bs[(j) + (i * 16) + ((80) * tabentry)];
-                    bu[i, j].IsChecked = thepattern.vec_bs1[i, j] != 0;  // INT TO        
+                    bu[i, j].IsChecked = thepattern.vec_bs1[i, j] != 0;  // INT TO BOOL        
                     //bu[i,j].IsChecked = thepattern.vec_bs[(j) + (i * 16) + ((80) * tabentry)] != 0 ;  // INT TO  
                 }
             }

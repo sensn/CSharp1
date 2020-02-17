@@ -53,11 +53,12 @@ namespace CSharp1
 
         public void setMidiout( IMidiOutPort midiOutPort1)
         {
-            midiOutPort = midiOutPort1;
+           midiOutPort = midiOutPort1;
            
           
         }
 
+       // public async Task mythread1()
         public void mythread1()
         {
             long begin = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;

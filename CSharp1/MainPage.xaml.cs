@@ -140,9 +140,9 @@ namespace CSharp1
                         contentFrame.Navigate(typeof(ShopPage));
                         break;
 
-                    //case "Nav_ShopCart":
-                    //    contentFrame.Navigate(typeof(CartPage));
-                    //    break;
+                    case "Nav_ShopCart":
+                        contentFrame.Navigate(typeof(LoadFromDBPage));
+                        break;
 
                     //case "Nav_Message":
                     //    contentFrame.Navigate(typeof(MessagePage));

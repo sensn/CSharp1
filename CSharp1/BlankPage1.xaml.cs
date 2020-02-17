@@ -30,6 +30,8 @@ using Windows.UI.Popups;
 using System.Data;
 using System.Data.SqlClient;
 
+
+
 // Die Elementvorlage "Leere Seite" wird unter https://go.microsoft.com/fwlink/?LinkId=234238 dokumentiert.
 
 namespace CSharp1
@@ -104,16 +106,17 @@ namespace CSharp1
 
 
             //Task t1 = new Task(action, "alpha");
-           
+
             //t1.Start();
             //Console.WriteLine("t1 has been launched. (Main Thread={0})",
             //                  Thread.CurrentThread.ManagedThreadId);
 
             //Creating thread
             // Using thread class
-             Thread thr = new Thread(new ThreadStart(playsequence.mythread1));
-              thr.Priority = ThreadPriority.Highest;
-             thr.Start();
+
+            Thread thr = new Thread(new ThreadStart(playsequence.mythread1));
+            thr.Priority = ThreadPriority.Highest;
+            thr.Start();
 
             // DefaultLaunch();    //Launch a app from asociated filetype
             //****MIDI
@@ -318,9 +321,10 @@ namespace CSharp1
             room[0].uniformGrid2.Visibility = Visibility.Visible;
             room[0].uniformGrid3.Visibility = Visibility.Visible;
 
-        
+
             // midiOut1();
             //  checkit();
+          //  fill_table();
         }  // public MAINPAGE
 
         
@@ -341,14 +345,14 @@ namespace CSharp1
 
 
 
-        private void HandleloadFromDBButtonChecked(object sender, RoutedEventArgs e)
+        private async void HandleloadFromDBButtonChecked(object sender, RoutedEventArgs e)
         {
-            //  throw new NotImplementedException();
+            await load_table();
         }
 
-        private void HandlesaveTODBButtonClick(object sender, RoutedEventArgs e)
+        private async void HandlesaveTODBButtonClick(object sender, RoutedEventArgs e)
         {
-            // throw new NotImplementedException();
+            await fill_table();
         }
 
         private void HandlebnkButtonClicked(object sender, RoutedEventArgs e)
@@ -380,13 +384,13 @@ namespace CSharp1
           //  Debug.WriteLine(" SELECTED: "+ midiOutPortListBox.SelectedIndex);
             if (!midiset && midiOutPortListBox.SelectedIndex == -1) {
                 midiOutPortListBox.SelectedIndex = 0;
-                //midiOut1();
+                midiOut1();
                 playsequence.setMidiout(midiOutPort);
                 midiset = true; }
 
             playsequence.isplaying = !playsequence.isplaying;
-           // Debug.WriteLine("PLAY");
-           // Debug.WriteLine("MIDI ITEMS: " + midiOutPortListBox.Items.Count);
+            Debug.WriteLine("PLAY");
+            Debug.WriteLine("MIDI ITEMS: " + midiOutPortListBox.Items.Count);
         }
 
         private async void HandleloadSlotChecked(object sender, RoutedEventArgs e)
@@ -643,6 +647,7 @@ namespace CSharp1
                 return;
             }
             midiInPort.MessageReceived += MidiInPort_MessageReceived;
+         
         }
         private void MidiInPort_MessageReceived(MidiInPort sender, MidiMessageReceivedEventArgs args)
         {
@@ -761,8 +766,191 @@ namespace CSharp1
         #endregion
         /////SQLLLL
         ///
-        public void fill_table() { }
-        public  void create_table()
+        async public Task fill_table() {
+            SqlCommand myCommand = new SqlCommand();
+            SqlDataReader myReader = null;
+            {
+                try
+                {
+                    SqlCommand mycommand = new SqlCommand();
+                    myCommand.Connection = CommonData.MyCon.MyCon;
+                    myCommand.CommandType = CommandType.Text;
+                    myCommand.CommandText = "UPDATE " + CommonData.mytablename + " SET " + CommonData.theColummsUpd + "WHERE id=@id";
+                    Debug.WriteLine("Command TEXT: " + myCommand.CommandText);
+                    //myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id)" + " VALUES (@id)";
+                    // myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id," + CommonData.theColummsRaw + ")" + " VALUES (@id," + CommonData.theColummsVal + ")";
+                    CommonData.MyCon.openConnection();
+                    for (int i = 0; i < (16 * 5) * numentries; i++)
+                    {
+                        myCommand.Parameters.Clear();
+                        for (int x = 0; x < numchannels; x++)
+                        {
+                            String thestring = "@Channel" + x;
+                            //query.bindValue(thestring, room[x]->thepattern.vec_bs[i]);
+                            myCommand.Parameters.Add(thestring, SqlDbType.TinyInt).Value = room[x].thepattern.vec_bs[i];
+                        }
+                        myCommand.Parameters.Add("@id", SqlDbType.Int).Value = i;
+                        //myReader = myCommand.ExecuteReader();
+                        myCommand.ExecuteNonQuery();
+                    }
+                    CommonData.MyCon.closeConnection();
+                }
+                catch (Exception ex)
+                {
+                   // MessageBox.Show(ex.Message);
+                 //    MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
+                //    await dialog.ShowAsync();
+                    Debug.WriteLine("FAIL!!", "Information " + ex.Message);
+                }
+                finally
+                {
+                    if (CommonData.MyCon.MyCon != null)
+                        CommonData.MyCon.closeConnection();
+                }
+            }
+
+            {
+                {
+                    try
+                    {
+                        SqlCommand mycommand = new SqlCommand();
+                        myCommand.Connection = CommonData.MyCon.MyCon;
+                        myCommand.CommandType = CommandType.Text;
+                        myCommand.CommandText = "UPDATE " + CommonData.mytablename + " SET " + CommonData.theColummsUpdSingle + "WHERE id=@id";
+                        Debug.WriteLine("Command TEXT: " + myCommand.CommandText);
+                        //myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id)" + " VALUES (@id)";
+                        // myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id," + CommonData.theColummsRaw + ")" + " VALUES (@id," + CommonData.theColummsVal + ")";
+                        CommonData.MyCon.openConnection();
+                        for (int x = 0; x < numchannels; x++)
+                        {
+                            myCommand.Parameters.Clear();
+                            for (int y = 0; y < numchannels; y++)
+                            {
+                                String thestring = "@Volume" + y;
+                                myCommand.Parameters.Add(thestring, SqlDbType.TinyInt).Value = room[y].thepattern.int_vs[x];
+                                thestring = "@Bank" + y;
+                                myCommand.Parameters.Add(thestring, SqlDbType.TinyInt).Value = room[y].thepattern.int_bnk[x];
+                                thestring = "@Prg" + y;
+                                myCommand.Parameters.Add(thestring, SqlDbType.TinyInt).Value = room[y].thepattern.int_prg[x];
+                            }                           
+                            myCommand.Parameters.Add("@id", SqlDbType.Int).Value = (x);
+                            //myReader = myCommand.ExecuteReader();
+                            myCommand.ExecuteNonQuery();
+                        }
+                        CommonData.MyCon.closeConnection();
+                    }
+                    catch (Exception ex)
+                    {
+                        // MessageBox.Show(ex.Message);
+                        //    MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
+                        //    await dialog.ShowAsync();
+                        Debug.WriteLine("FAIL!!", "Information " + ex.Message);
+                    }
+                    finally
+                    {
+                        if (CommonData.MyCon.MyCon != null)
+                            CommonData.MyCon.closeConnection();
+                    }
+                }
+
+
+            }
+
+
+
+        }
+
+        public async Task load_table()
+        {
+          { 
+            SqlCommand myCommand = new SqlCommand();
+            SqlDataReader myReader = null;
+            // bool tableexisted = false;
+            try
+            {
+                //Commandtype --> Stored Procedure + Name der Prozedur angeben
+                //  myCommand.CommandText = "SELECT * FROM [TestDB].[dbo].[USERData]";
+                // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
+                myCommand.Connection = CommonData.MyCon.MyCon;
+                myCommand.CommandType = CommandType.Text;
+                myCommand.CommandText = "SELECT* FROM " + CommonData.mytablename + "";
+                CommonData.MyCon.openConnection();
+                myReader = myCommand.ExecuteReader();
+
+                while (myReader.Read())
+                {
+                    for (int i = 0; i < numchannels; i++)
+                    {
+                        //reader.GetInt32(reader.GetOrdinal(columnName));
+                        room[i].thepattern.vec_bs[myReader.GetInt32(0)] = myReader.GetByte(i + 1);
+                        //Debug.WriteLine("READ BSTATE" + myReader[0].ToString());
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                // MessageBox.Show(ex.Message);
+                //  MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
+                // await dialog.ShowAsync();
+            }
+            finally
+            {
+                if (CommonData.MyCon.MyCon != null)
+                    CommonData.MyCon.closeConnection();
+            }
+          }
+            {
+                SqlCommand myCommand = new SqlCommand();
+                SqlDataReader myReader = null;
+                // bool tableexisted = false;
+                try
+                {
+                    //Commandtype --> Stored Procedure + Name der Prozedur angeben
+                    //  myCommand.CommandText = "SELECT * FROM [TestDB].[dbo].[USERData]";
+                    // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
+                    myCommand.Connection = CommonData.MyCon.MyCon;
+                    myCommand.CommandType = CommandType.Text;
+                    myCommand.CommandText = "SELECT id, " + CommonData.theColummsSingleRaw + " FROM " + CommonData.mytablename + " WHERE id=@id";
+                    CommonData.MyCon.openConnection();
+                    for (int i = 0; i < numchannels; i++)
+                    {
+                        myCommand.Parameters.Clear();
+                        myCommand.Parameters.Add("@id", SqlDbType.Int).Value = i;
+                        //  query.bindValue(":rowid", (i + 1));
+                        myReader = myCommand.ExecuteReader();
+
+                        while (myReader.Read())
+                        {
+                            for (int j = 0; j < numchannels; j++)
+                            {
+                                room[j].thepattern.int_vs[myReader.GetInt32(0)] = myReader.GetByte(j + 1);
+                               // Debug.WriteLine("VOL:"+myReader.GetByte(j + 1));
+                                room[j].thepattern.int_bnk[myReader.GetInt32(0)] = myReader.GetByte(((j + 1) + (numchannels)));
+
+                                room[j].thepattern.int_prg[myReader.GetInt32(0)] = myReader.GetByte(((j + 1) + (numchannels * 2)));
+                              //  Debug.WriteLine("DONE");
+                            }
+
+                        }
+                        myReader.Close();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // MessageBox.Show(ex.Message);
+                    //  MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
+                    // await dialog.ShowAsync();
+                    Debug.WriteLine("FAIL FAIL " + ex.Message);
+                }
+                finally
+                {
+                    if (CommonData.MyCon.MyCon != null)
+                        CommonData.MyCon.closeConnection();
+                }
+            }
+        }
+        public async Task create_table()
         {
                SqlCommand myCommand = new SqlCommand();
                SqlDataReader myReader = null;
@@ -782,6 +970,7 @@ namespace CSharp1
                 while (myReader.Read())
                 {
                     Debug.WriteLine("HOHO" + myReader[0].ToString());
+                    CommonData.setTheSongs(myReader[0].ToString());
                     if (CommonData.mytablename == myReader[0].ToString()) { tableexisted = true; } 
                 }
                Console.WriteLine("HOHO" + myReader[0].ToString());
@@ -820,30 +1009,47 @@ namespace CSharp1
                         CommonData.MyCon.closeConnection();
                 }
                 //
-            }
-            else
-            {
+           
+          
+            { 
                 try
                 {
+                    SqlCommand mycommand = new SqlCommand();
                     myCommand.Connection = CommonData.MyCon.MyCon;
                     myCommand.CommandType = CommandType.Text;
-                    myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id," + CommonData.theColummsRaw + ")" + " VALUES (:id," + CommonData.theColummsVal + ")";
-                   
+                    myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id)" + " VALUES (@id)";
+                   // myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id," + CommonData.theColummsRaw + ")" + " VALUES (@id," + CommonData.theColummsVal + ")";
                     CommonData.MyCon.openConnection();
-                    myReader = myCommand.ExecuteReader();
+                    for (int i = 0; i < (16 * 5) * numentries; i++)
+                    {
+                        myCommand.Parameters.Clear();
+                        //Debug.WriteLine("INSERT INTO" + i);
+                        //myCommand.Parameters.AddWithValue("parentId", 1);
+                        myCommand.Parameters.Add("@id", SqlDbType.Int).Value = i;
+                       // myCommand.Parameters.AddWithValue("id", i);
+                    
+                
+                    //myReader = myCommand.ExecuteReader();
+                    myCommand.ExecuteNonQuery();
+                      
+                    }
+                    CommonData.MyCon.closeConnection();
                 }
                 catch (Exception ex)
                 {
-                    // MessageBox.Show(ex.Message);
-                    //  MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
-                    // await dialog.ShowAsync();
+                     //MessageBox.Show(ex.Message);
+                     // MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
+                     //await dialog.ShowAsync();
+                    Debug.WriteLine("FAIL!!", "Information " + ex.Message);
                 }
                 finally
                 {
                     if (CommonData.MyCon.MyCon != null)
                         CommonData.MyCon.closeConnection();
                 }
-            }
+             }
+
+           }
             //
         }
 
