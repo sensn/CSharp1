@@ -11,6 +11,7 @@ namespace CSharp1
     {
         public static List<String> thesongs=  new List<String>(2);
 
+        public static int BPM;
 
        public static String theColumms = "";
        public static String theColummsRaw = "";
@@ -18,10 +19,13 @@ namespace CSharp1
        public static String theColummsUpd = "";
        public static String theColummsUpdSingle = "";
        public static String theColummsSingleRaw = "";
-       public static String mytablename = "test16";
+       private static String mytablename = "test16";
        public static int numchannels = 10;
 
         public static DBConnection MyCon;
+
+        public static string Mytablename { get => mytablename; set => mytablename = value; }
+        public static string Database { get; internal set; }
 
         public static void setTheSongs(String thesong)
         {
@@ -30,6 +34,7 @@ namespace CSharp1
         public static void SetConnection()
         {
             MyCon = new DBConnection();
+            MyCon.setConnectionString();
             MyCon.establishConnection();
         }
 

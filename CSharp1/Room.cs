@@ -154,11 +154,16 @@ namespace CSharp1
                // b.IsThreeState = true;
                uniformGrid3.Children.Add(mute_bu[i]);
             }
-
+           
+            slider[0] = new Slider();
+            slider[1] = new Slider();
+            slider[2] = new Slider();
+           
+            
             for (int i = 0; i < 3; i++)
             {
-                slider[i] = new Slider();
-                slider[i].Header = "Volume";
+                
+             
                 slider[i].Width = 600;
                 // slider[i].Height = 1000;
                 sliderclientDict.Add(slider[i], i);
@@ -173,7 +178,9 @@ namespace CSharp1
             slider[0].Minimum = 30;
             slider[1].Maximum = 127;
             slider[1].Minimum = 0;
-
+            slider[0].Header = "Bpm";
+            slider[1].Header = "Volume";
+            slider[2].Header = "Release";
             //for (int i = 0; i < 2; i++) { 
             //    prgButton[i] = new Button();
             //prgButton[i].HorizontalAlignment = HorizontalAlignment.Stretch;
@@ -265,8 +272,12 @@ namespace CSharp1
             //Debug.WriteLine(client+ " " + sl.Value);
             ////  Debug.WriteLine(client);
             if (client == 0)
-            BlankPage1.bpm_value((int)sl.Value);
-            if (client == 1)
+            {
+                CommonData.BPM = (int)sl.Value;
+                BlankPage1.bpm_value((int)sl.Value);
+               
+            }
+                if (client == 1)
                 BlankPage1.vol_value(channel, (int)sl.Value);
 
             //throw new NotImplementedException();

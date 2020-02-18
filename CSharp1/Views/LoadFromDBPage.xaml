@@ -22,11 +22,11 @@
         <!--<TextBlock>Shop</TextBlock>-->
 
         <controls:UniformGrid x:Name="UniformGrid_LoadSong"  Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1"  Orientation="Horizontal"  Columns="2" Rows="3"  ColumnSpacing="4" RowSpacing="4">
-            <ListView  x:Name="songListView" Grid.Row="0" Grid.Column="0"  Header="Songs in Database:"/>
+            <ListView  x:Name="songListView" Grid.Row="0" Grid.Column="0"  Header="Delete Songs from Database:"/>
             
             <!--<TextBox  x:Name="txtbox_username"  Grid.Row="0" Grid.Column="0"  Header="Username:"  PlaceholderText="Username"/>
             <PasswordBox x:Name="pwdbox_username"  Grid.Row="1" Grid.Column="0"  Header="Password:"  PlaceholderText="Password"/>-->
-            <Button x:Name="btn_loadSong" Content="Load Song"  Grid.Row="2" Grid.Column="0"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="btn_loadSong_Click" />
+            <Button x:Name="btn_loadSong" Content="Delete Song"  Grid.Row="2" Grid.Column="0"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="btn_loadSong_Click" />
         </controls:UniformGrid>
     </Grid>
 </Page>

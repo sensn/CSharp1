@@ -5,6 +5,7 @@ using Windows.UI.Popups;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Collections.Generic;
 
 // Die Elementvorlage "Leere Seite" wird unter https://go.microsoft.com/fwlink/?LinkId=234238 dokumentiert.
 
@@ -15,6 +16,8 @@ namespace CSharp1.Views
     /// </summary>
     public sealed partial class ShopPage : Page
     {
+        private bool dbexisted= false;
+
         public ShopPage()
         {
             this.InitializeComponent();
@@ -22,6 +25,7 @@ namespace CSharp1.Views
 
         private async void btn_username_Click(object sender, RoutedEventArgs e)
         {
+            List<string> thelist = GetDatabaseList();
             String username = txtbox_username.Text;
             String password = pwdbox_username.Password;
             Debug.WriteLine(username);
@@ -75,6 +79,25 @@ namespace CSharp1.Views
                         // window.Show();
                         MessageDialog dialog = new MessageDialog("LOGIN?", "LOGIN OK ");
                         await dialog.ShowAsync();
+                       
+
+                        // GET ALL DATABASES ON SERVER
+                      
+                        foreach (var db in thelist)
+                        {
+                            Debug.WriteLine(db);
+                            if (username == db) dbexisted = true;
+                        }
+                        if (dbexisted)
+                        {
+                            CommonData.Database = username;
+                            CommonData.MyCon.setConnectionString();
+                            CommonData.MyCon.establishConnection();
+                        }
+                        //
+
+
+
                         Frame navigationFrame = this.Frame as Frame;
                         navigationFrame.Navigate(typeof(BlankPage1));
                         Frame appFrame = Window.Current.Content as Frame;
@@ -102,6 +125,48 @@ namespace CSharp1.Views
                 if (CommonData.MyCon.MyCon != null)
                     CommonData.MyCon.closeConnection();
             }
+            //Debug.WriteLine(GetDatabaseList());
+         
+        }
+
+
+        public List<string> GetDatabaseList()
+        {
+            List<string> list = new List<string>();
+
+            SqlCommand myCommand = new SqlCommand();
+            SqlDataReader myReader = null;
+
+            bool tableexisted = false;
+          
+                //Commandtype --> Stored Procedure + Name der Prozedur angeben
+                //  myCommand.CommandText = "SELECT * FROM [TestDB].[dbo].[USERData]";
+                // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
+                myCommand.Connection = CommonData.MyCon.MyCon;
+                myCommand.CommandType = CommandType.Text;
+                myCommand.CommandText = "SELECT name from sys.databases"; //GET TABLES IN DATABASE
+                CommonData.MyCon.openConnection();
+              //  myReader = myCommand.ExecuteReader();
+
+
+            // Set up a command with the given query and associate
+            // this with the current connection.
+
+            {
+                using (IDataReader dr = myCommand.ExecuteReader())
+                {
+                    while (dr.Read())
+                    {
+                        list.Add(dr[0].ToString());
+                    }
+                }
+
+            }
+
+            if (CommonData.MyCon.MyCon != null)
+                CommonData.MyCon.closeConnection();
+            return list;
+
         }
     }
 }

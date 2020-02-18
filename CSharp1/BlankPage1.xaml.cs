@@ -77,7 +77,12 @@ namespace CSharp1
         public static Worker playsequence;
         public static bool midiset = false;
         private int tabentry_save;
+        public ListView songListView;
+        public ListView songListView1;
+        public Flyout myflyout;
+        public Flyout myflyout1;
 
+        
         public BlankPage1()
         {
             InitializeComponent();
@@ -86,6 +91,7 @@ namespace CSharp1
 
             Debug.WriteLine("Servas Wöd, I brauch a göd! CREATE TASK");
             CommonData.SetConnection();   //CONNECT TO MS SQL SERVER
+            
             CommonData.create_SQL_Strings();
             create_table();
             playsequence = new Worker();
@@ -146,10 +152,18 @@ namespace CSharp1
             ButtonsUniformGrid_Copy.Orientation = Orientation.Horizontal;
             ButtonsUniformGrid_Copy.Columns = 16;
             ButtonsUniformGrid_Copy.Rows = 4;
+            Slider thebpmSlider = new Slider();
+            thebpmSlider.Orientation = Orientation.Vertical;
+            thebpmSlider.HorizontalAlignment = HorizontalAlignment.Stretch;
+            thebpmSlider.VerticalAlignment = VerticalAlignment.Stretch;
+            thebpmSlider.Header = "BPM";
+            thebpmSlider.ValueChanged += thebpmSlider_ValueChanged;
             for (int i = 0; i < numchannels; i++)
             {
                 room[i] = new Room();
                 room[i].channel = i;
+            
+
                 thegrid.Children.Add(room[i].uniformGrid1);
                 thegrid.Children.Add(room[i].uniformGrid2);
                 thegrid.Children.Add(room[i].uniformGrid3);
@@ -316,18 +330,84 @@ namespace CSharp1
             //loadFromDBButton.Unchecked += HandleChannelSelUnChecked;
             ButtonsUniformGrid_Copy1.Children.Add(loadFromDBButton);
 
+            myflyout =new Flyout();
+            songListView = new ListView();
+            myflyout.Content = songListView;
+            songListView.IsItemClickEnabled = true;
+            songListView.ItemClick += SongListView_ItemClick;
+            loadFromDBButton.Flyout  = myflyout;
+
+
+            songListView1 = new ListView();
+            
+            songListView1.IsItemClickEnabled = true;
+            songListView1.ItemClick += SongListView_ItemClick1;
+
+            //loadFromDBButton.Flyout  = "{StaticResource TravelFlyout}";
+            myflyout1 = new Flyout();
+            TextBox enter_songname = new TextBox();
+            enter_songname.KeyDown += Enter_songname_KeyDown;
+            Grid mygrid = new Grid();
+            RowDefinition rd1 = new RowDefinition();
+            RowDefinition rd2 = new RowDefinition();
+            rd1.Height= new GridLength(1,GridUnitType.Star);
+            rd2.Height= new GridLength(2,GridUnitType.Star);
+            mygrid.RowDefinitions.Add(rd1);
+            mygrid.RowDefinitions.Add(rd2);
+            mygrid.Children.Add(enter_songname);
+            mygrid.Children.Add(songListView1);
+            Grid.SetRow(enter_songname, 0);
+            Grid.SetRow(songListView1, 1);
+            myflyout1.Content = mygrid;
+            saveTODBButton.Flyout = myflyout1;
 
             room[0].uniformGrid1.Visibility = Visibility.Visible;
             room[0].uniformGrid2.Visibility = Visibility.Visible;
             room[0].uniformGrid3.Visibility = Visibility.Visible;
 
-
+         
             // midiOut1();
             //  checkit();
           //  fill_table();
         }  // public MAINPAGE
 
-        
+        private void thebpmSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void Enter_songname_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.Enter)
+            {
+                TextBox tbox = sender as TextBox;
+                CommonData.Mytablename = tbox.Text;
+                Debug.WriteLine("TABLENAME S: " + CommonData.Mytablename);
+                myflyout1.Hide();
+                create_table();
+                fill_table();
+            }
+           
+
+        }
+        private void SongListView_ItemClick1(object sender, ItemClickEventArgs e)
+        {
+            Debug.WriteLine("TABLENAME S: " + e.ClickedItem.ToString());
+            CommonData.Mytablename = e.ClickedItem.ToString();
+            myflyout1.Hide();
+            create_table();
+            fill_table();
+        }
+
+        private void SongListView_ItemClick(object sender, ItemClickEventArgs e)
+        {
+           Debug.WriteLine("TABLENAME S: " + e.ClickedItem.ToString());
+            CommonData.Mytablename = e.ClickedItem.ToString();
+            myflyout.Hide();
+            load_table();
+            
+        }
+
         private void HandlesaveSlotChecked(object sender, RoutedEventArgs e)
         {
             ToggleButton toggle = sender as ToggleButton;
@@ -347,12 +427,28 @@ namespace CSharp1
 
         private async void HandleloadFromDBButtonChecked(object sender, RoutedEventArgs e)
         {
-            await load_table();
+            songListView.Items.Clear();
+            get_tables();
+           // if (CommonData.thesongs.Count()>0) CommonData.thesongs.Clear();
+
+            for (var i = 0; i < CommonData.thesongs.Count; i++)
+            {
+              
+                songListView.Items.Add(CommonData.thesongs[i]);
+            }
+          //  await load_table();
         }
 
         private async void HandlesaveTODBButtonClick(object sender, RoutedEventArgs e)
         {
-            await fill_table();
+            songListView1.Items.Clear();
+            get_tables();
+           // if (CommonData.thesongs.Count() > 0) CommonData.thesongs.Clear();
+            for (var i = 0; i < CommonData.thesongs.Count; i++)
+            {
+               
+                songListView1.Items.Add(CommonData.thesongs[i]);
+            }
         }
 
         private void HandlebnkButtonClicked(object sender, RoutedEventArgs e)
@@ -430,7 +526,15 @@ namespace CSharp1
             playsequence.thebpm = thevalue;
             playsequence.ms = ((60000.0 / (double)thevalue) / (double)4);
             playsequence.dur = playsequence.ms;
-          //  Debug.WriteLine("MS: " + playsequence.ms);
+            //  Debug.WriteLine("MS: " + playsequence.ms);
+           
+        }
+        public void setbpmslidershack(int thevalue)
+        {
+            for (int i = 0; i < numchannels; i++)
+            {
+                room[i].slider[0].Value=thevalue;
+            }
         }
         public static void vol_value(int x, int v)
         {
@@ -518,6 +622,8 @@ namespace CSharp1
                     room[i].uniformGrid3.Visibility = Visibility.Collapsed;
                     channelSel[i].IsChecked = false;
                 }
+                room[i].slider[0].Value = CommonData.BPM;
+
             }
            // Debug.WriteLine("ACTIVECHANNEL:" + activechannel);
             activechannel = m;
@@ -685,7 +791,7 @@ namespace CSharp1
                 System.Diagnostics.Debug.WriteLine("Unable to create MidiOutPort from output device");
                 return;
             }
-
+            playsequence.setMidiout(midiOutPort);
         }
 
         private async void midiOut1()
@@ -765,7 +871,46 @@ namespace CSharp1
         }
         #endregion
         /////SQLLLL
-        ///
+        public async Task get_tables()
+        {
+            SqlCommand myCommand = new SqlCommand();
+            SqlDataReader myReader = null;
+
+            bool tableexisted = false;
+            try
+            {
+                //Commandtype --> Stored Procedure + Name der Prozedur angeben
+                //  myCommand.CommandText = "SELECT * FROM [TestDB].[dbo].[USERData]";
+                // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
+                myCommand.Connection = CommonData.MyCon.MyCon;
+                myCommand.CommandType = CommandType.Text;
+                myCommand.CommandText = " SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = '"+CommonData.Database+"'"; //GET TABLES IN DATABASE
+                CommonData.MyCon.openConnection();
+                myReader = myCommand.ExecuteReader();
+                if (CommonData.thesongs.Count() > 0) CommonData.thesongs.Clear();    //Clear the songs list to fill it again
+                while (myReader.Read())
+                {
+                    Debug.WriteLine("HOHO" + myReader[0].ToString());
+
+                    CommonData.setTheSongs(myReader[0].ToString());
+                    if (CommonData.Mytablename == myReader[0].ToString()) { tableexisted = true; }
+                }
+                Console.WriteLine("HOHO" + myReader[0].ToString());
+                //Console.WriteLine(myReader[0].ToString() + "" + myReader[1].ToString());                       
+            }
+            catch (Exception ex)
+            {
+                // MessageBox.Show(ex.Message);
+                //  MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
+                // await dialog.ShowAsync();
+            }
+            finally
+            {
+                if (CommonData.MyCon.MyCon != null)
+                    CommonData.MyCon.closeConnection();
+            }
+
+        }
         async public Task fill_table() {
             SqlCommand myCommand = new SqlCommand();
             SqlDataReader myReader = null;
@@ -775,7 +920,7 @@ namespace CSharp1
                     SqlCommand mycommand = new SqlCommand();
                     myCommand.Connection = CommonData.MyCon.MyCon;
                     myCommand.CommandType = CommandType.Text;
-                    myCommand.CommandText = "UPDATE " + CommonData.mytablename + " SET " + CommonData.theColummsUpd + "WHERE id=@id";
+                    myCommand.CommandText = "UPDATE " + CommonData.Mytablename + " SET " + CommonData.theColummsUpd + "WHERE id=@id";
                     Debug.WriteLine("Command TEXT: " + myCommand.CommandText);
                     //myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id)" + " VALUES (@id)";
                     // myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id," + CommonData.theColummsRaw + ")" + " VALUES (@id," + CommonData.theColummsVal + ")";
@@ -816,7 +961,7 @@ namespace CSharp1
                         SqlCommand mycommand = new SqlCommand();
                         myCommand.Connection = CommonData.MyCon.MyCon;
                         myCommand.CommandType = CommandType.Text;
-                        myCommand.CommandText = "UPDATE " + CommonData.mytablename + " SET " + CommonData.theColummsUpdSingle + "WHERE id=@id";
+                        myCommand.CommandText = "UPDATE " + CommonData.Mytablename + " SET " + CommonData.theColummsUpdSingle + "WHERE id=@id";
                         Debug.WriteLine("Command TEXT: " + myCommand.CommandText);
                         //myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id)" + " VALUES (@id)";
                         // myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id," + CommonData.theColummsRaw + ")" + " VALUES (@id," + CommonData.theColummsVal + ")";
@@ -873,7 +1018,7 @@ namespace CSharp1
                 // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
                 myCommand.Connection = CommonData.MyCon.MyCon;
                 myCommand.CommandType = CommandType.Text;
-                myCommand.CommandText = "SELECT* FROM " + CommonData.mytablename + "";
+                myCommand.CommandText = "SELECT* FROM " + CommonData.Mytablename + "";
                 CommonData.MyCon.openConnection();
                 myReader = myCommand.ExecuteReader();
 
@@ -911,7 +1056,7 @@ namespace CSharp1
                     // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
                     myCommand.Connection = CommonData.MyCon.MyCon;
                     myCommand.CommandType = CommandType.Text;
-                    myCommand.CommandText = "SELECT id, " + CommonData.theColummsSingleRaw + " FROM " + CommonData.mytablename + " WHERE id=@id";
+                    myCommand.CommandText = "SELECT id, " + CommonData.theColummsSingleRaw + " FROM " + CommonData.Mytablename + " WHERE id=@id";
                     CommonData.MyCon.openConnection();
                     for (int i = 0; i < numchannels; i++)
                     {
@@ -963,15 +1108,16 @@ namespace CSharp1
                 // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
                 myCommand.Connection = CommonData.MyCon.MyCon;
                 myCommand.CommandType = CommandType.Text;
-                myCommand.CommandText = " SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = 'TestDB'"; //GET TABLES IN DATABASE
+                myCommand.CommandText = " SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = '" + CommonData.Database + "'"; //GET TABLES IN DATABASE
                 CommonData.MyCon.openConnection();
                 myReader = myCommand.ExecuteReader();
-               
+               // if (CommonData.thesongs.Count() > 0) CommonData.thesongs.Clear();    //Clear the songs list to fill it again
                 while (myReader.Read())
                 {
                     Debug.WriteLine("HOHO" + myReader[0].ToString());
-                    CommonData.setTheSongs(myReader[0].ToString());
-                    if (CommonData.mytablename == myReader[0].ToString()) { tableexisted = true; } 
+                   
+                   // CommonData.setTheSongs(myReader[0].ToString());
+                    if (CommonData.Mytablename == myReader[0].ToString()) { tableexisted = true; } 
                 }
                Console.WriteLine("HOHO" + myReader[0].ToString());
                 //Console.WriteLine(myReader[0].ToString() + "" + myReader[1].ToString());                       
@@ -993,7 +1139,7 @@ namespace CSharp1
                 {
                     myCommand.Connection = CommonData.MyCon.MyCon;
                     myCommand.CommandType = CommandType.Text;
-                    myCommand.CommandText = "CREATE TABLE " + CommonData.mytablename + " (id INTEGER , " + CommonData.theColumms + ")"; //GET TABLES IN DATABASE
+                    myCommand.CommandText = "CREATE TABLE " + CommonData.Mytablename + " (id INTEGER , " + CommonData.theColumms + ")"; //GET TABLES IN DATABASE
                     CommonData.MyCon.openConnection();
                     myReader = myCommand.ExecuteReader();
                 }
@@ -1017,7 +1163,7 @@ namespace CSharp1
                     SqlCommand mycommand = new SqlCommand();
                     myCommand.Connection = CommonData.MyCon.MyCon;
                     myCommand.CommandType = CommandType.Text;
-                    myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id)" + " VALUES (@id)";
+                    myCommand.CommandText = "INSERT INTO " + CommonData.Mytablename + "(id)" + " VALUES (@id)";
                    // myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id," + CommonData.theColummsRaw + ")" + " VALUES (@id," + CommonData.theColummsVal + ")";
                     CommonData.MyCon.openConnection();
                     for (int i = 0; i < (16 * 5) * numentries; i++)
