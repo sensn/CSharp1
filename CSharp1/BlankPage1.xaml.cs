@@ -82,18 +82,51 @@ namespace CSharp1
         public Flyout myflyout;
         public Flyout myflyout1;
 
-        
+        List<string> theDBlist;
+
+        bool AccDbExisted = false;
+        bool DefaultDbExisted = false;
         public BlankPage1()
         {
             InitializeComponent();
             // Add the following line of code.
             this.NavigationCacheMode = Windows.UI.Xaml.Navigation.NavigationCacheMode.Enabled;
 
-            Debug.WriteLine("Servas Wöd, I brauch a göd! CREATE TASK");
+
+            CommonData.Database = "master";
+            CommonData.SetConnection();   //CONNECT TO MS SQL SERVER
+            theDBlist = GetDatabaseList();
+            foreach (var db in theDBlist)
+            {
+               // Debug.WriteLine(db);
+                if ("myDBSeqAccounts" == db) AccDbExisted = true;
+                if ("DefaultSeqDb" == db) DefaultDbExisted = true;
+            }
+            if (!AccDbExisted)
+            {
+                create_dbAsync("myDBSeqAccounts");
+                CommonData.Database = "myDBSeqAccounts";
+                create_dbTableAsync();
+            }
+
+            if (DefaultDbExisted)
+            {
+                CommonData.Database = "DefaultSeqDb";
+            }
+            else
+            {
+                create_dbAsync("DefaultSeqDb");
+                CommonData.Database = "DefaultSeqDb";
+               
+            }
+           
+
+                Debug.WriteLine("Servas Wöd, I brauch a göd! CREATE TASK");
+            CommonData.Database = "DefaultSeqDb";   //Default Database
             CommonData.SetConnection();   //CONNECT TO MS SQL SERVER
             
             CommonData.create_SQL_Strings();
-            create_table();
+         //   create_table();
             playsequence = new Worker();
             Worker.LogHandler myLogger = new Worker.LogHandler(sendMidiMessage);
             Worker.LogHandler2 myLogger2 = new Worker.LogHandler2(DoSomething);
@@ -371,507 +404,7 @@ namespace CSharp1
           //  fill_table();
         }  // public MAINPAGE
 
-        private void thebpmSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void Enter_songname_KeyDown(object sender, KeyRoutedEventArgs e)
-        {
-            if (e.Key == Windows.System.VirtualKey.Enter)
-            {
-                TextBox tbox = sender as TextBox;
-                CommonData.Mytablename = tbox.Text;
-                Debug.WriteLine("TABLENAME S: " + CommonData.Mytablename);
-                myflyout1.Hide();
-                create_table();
-                fill_table();
-            }
-           
-
-        }
-        private void SongListView_ItemClick1(object sender, ItemClickEventArgs e)
-        {
-            Debug.WriteLine("TABLENAME S: " + e.ClickedItem.ToString());
-            CommonData.Mytablename = e.ClickedItem.ToString();
-            myflyout1.Hide();
-            create_table();
-            fill_table();
-        }
-
-        private void SongListView_ItemClick(object sender, ItemClickEventArgs e)
-        {
-           Debug.WriteLine("TABLENAME S: " + e.ClickedItem.ToString());
-            CommonData.Mytablename = e.ClickedItem.ToString();
-            myflyout.Hide();
-            load_table();
-            
-        }
-
-        private void HandlesaveSlotChecked(object sender, RoutedEventArgs e)
-        {
-            ToggleButton toggle = sender as ToggleButton;
-            int m = (int)toggle.Tag;
-            tabentry_save = m;
-            for (int i = 0; i < numchannels; i++)
-            {
-                if (i != m)
-                {
-                    saveSlot[i].IsChecked = false;
-                }
-            }
-        }
-
-
-
-
-        private async void HandleloadFromDBButtonChecked(object sender, RoutedEventArgs e)
-        {
-            songListView.Items.Clear();
-            get_tables();
-           // if (CommonData.thesongs.Count()>0) CommonData.thesongs.Clear();
-
-            for (var i = 0; i < CommonData.thesongs.Count; i++)
-            {
-              
-                songListView.Items.Add(CommonData.thesongs[i]);
-            }
-          //  await load_table();
-        }
-
-        private async void HandlesaveTODBButtonClick(object sender, RoutedEventArgs e)
-        {
-            songListView1.Items.Clear();
-            get_tables();
-           // if (CommonData.thesongs.Count() > 0) CommonData.thesongs.Clear();
-            for (var i = 0; i < CommonData.thesongs.Count; i++)
-            {
-               
-                songListView1.Items.Add(CommonData.thesongs[i]);
-            }
-        }
-
-        private void HandlebnkButtonClicked(object sender, RoutedEventArgs e)
-        {
-            //    throw new NotImplementedException();
-            Button button = sender as Button;
-            int m = (int)button.Tag;
-            room[activechannel].bank += m > 0 ? (room[activechannel].bank < 1)? 0 : -1 : 1;
-            bankchangeme(activechannel, room[activechannel].bank);
-            prgchangeme(activechannel, room[activechannel].prg);
-            bnkText.Text = room[activechannel].bank.ToString();
-
-        }
-        private void HandleprgButtonClicked(object sender, RoutedEventArgs e)
-        {
-            Button button = sender as Button;
-            int m = (int)button.Tag;
-            room[activechannel].prg += m > 0 ? (room[activechannel].prg < 1) ? 0 : -1 : 1;
-            prgchangeme(activechannel, room[activechannel].prg);
-            prgText.Text = room[activechannel].prg.ToString();
-            ////    throw new NotImplementedException();
-            //  bankchangeme(channel,bank)
-            // throw new NotImplementedException();
-        }
-
-        private void HandleplayButtonClicked(object sender, RoutedEventArgs e)
-        {
-            //  this.Frame.Navigate(typeof(BlankPage1));
-          //  Debug.WriteLine(" SELECTED: "+ midiOutPortListBox.SelectedIndex);
-            if (!midiset && midiOutPortListBox.SelectedIndex == -1) {
-                midiOutPortListBox.SelectedIndex = 0;
-                midiOut1();
-                playsequence.setMidiout(midiOutPort);
-                midiset = true; }
-
-            playsequence.isplaying = !playsequence.isplaying;
-            Debug.WriteLine("PLAY");
-            Debug.WriteLine("MIDI ITEMS: " + midiOutPortListBox.Items.Count);
-        }
-
-        private async void HandleloadSlotChecked(object sender, RoutedEventArgs e)
-        {
-            //  throw new NotImplementedException();
-            ToggleButton toggle = sender as ToggleButton;
-            int m = (int)toggle.Tag;
-            tabentry = m;
-            for (int i = 0; i < numchannels; i++)
-            {
-                if (i != m)
-                {
-                    loadSlot[i].IsChecked = false;
-                }
-            }
-            //
-            for (int x = 0; x < numchannels; x++)
-            {
-                room[x].pattern_load_struct(tabentry);
-                //room[x].slider[1].SetValue(room[x].thepattern.int_vs[tabentry]));
-                room[x].slider[1].Value = room[x].thepattern.int_vs[tabentry];
-                room[x].slider[2].Value = room[x].thepattern.int_sl2[tabentry];
-             
-                room[x].prg = room[x].thepattern.int_prg[tabentry];
-               
-                room[x].bank = room[x].thepattern.int_bnk[tabentry];
-              
-                bankchangeme(x, room[x].bank);
-                prgchangeme(x, room[x].prg);
-                vol_value(x, room[x].thepattern.int_vs[tabentry]);
-                bnkText.Text = room[activechannel].bank.ToString();
-                prgText.Text = room[activechannel].prg.ToString();
-            }
-        }
-        public static void bpm_value(int thevalue)
-        {
-            playsequence.thebpm = thevalue;
-            playsequence.ms = ((60000.0 / (double)thevalue) / (double)4);
-            playsequence.dur = playsequence.ms;
-            //  Debug.WriteLine("MS: " + playsequence.ms);
-           
-        }
-        public void setbpmslidershack(int thevalue)
-        {
-            for (int i = 0; i < numchannels; i++)
-            {
-                room[i].slider[0].Value=thevalue;
-            }
-        }
-        public static void vol_value(int x, int v)
-        {
-            IMidiMessage midiMessageToSend = new MidiControlChangeMessage((byte)x, 7, (byte)v);
-            midiOutPort.SendMessage(midiMessageToSend);
-        }
-
-        public static void prgchangeme(int x, int prg)
-        {
-            IMidiMessage midiMessageToSend1 = new MidiProgramChangeMessage((byte)x, (byte)prg);
-            midiOutPort.SendMessage(midiMessageToSend1);
-        }
-
-        public static void bankchangeme(int x, int bank)
-        {
-            byte channel = (byte)x;
-            byte controller = 0;
-            byte controlValue = (byte)bank;
-            //  byte prg = (byte)room[x].prg;
-            IMidiMessage midiMessageToSend = new MidiControlChangeMessage(channel, controller, controlValue);
-            // IMidiMessage midiMessageToSend1 = new MidiProgramChangeMessage(channel, prg);
-            midiOutPort.SendMessage(midiMessageToSend);
-            //  midiOutPort.SendMessage(midiMessageToSend1);
-        }
-        public void checkit()
-        {          
-             // Debug.WriteLine("CHECK IT !!!!!!!!!!!!!!!!!! : " );
-            //  Debug.WriteLine(room[0].thepattern.vec_bs1[0, 0]);
-        }
-        public  void sendMidiMessage(int i, int j, int index)
-        {
-           
-            //for (int x = 0; x < 15; x++)
-            //{
-            //   // ALL NOTES OF
-            //    IMidiMessage midiMessageToSend = new MidiControlChangeMessage((byte)(x), (byte)123, (byte)0);
-            //    midiOutPort.SendMessage(midiMessageToSend);
-            //}
-          
-            //for (int x = 0; x < 10; x++)
-            //{
-            //    for (int y = 0; y < 5; y++)
-            //    {                 
-            //        if (room[x].thepattern.vec_bs1[y,index] == 1 && room[x].thepattern.vec_m_bs1[y]== 1)
-            //        {                   
-            //            byte channel = (byte)x;
-            //            byte note = (byte)(35 + y);
-            //            byte velocity = 100;
-
-            //            IMidiMessage midiMessageToSend = new MidiNoteOnMessage(channel, note, velocity);
-            //            midiOutPort.SendMessage(midiMessageToSend);
-            //        }
-            //    }
-            //}
-            DoSomething((short)index);
-        }
-        private void HandlesavePatternChecked(object sender, RoutedEventArgs e)
-        {
-            // ToggleButton toggle = sender as ToggleButton;
-            // int m = (int)toggle.Tag;
-            for (int x = 0; x < 10; x++)
-            {
-                room[x].pattern_save_struct(tabentry_save);
-                room[x].thepattern.int_vs[tabentry_save] = (int)room[x].slider[1].Value;
-                room[x].thepattern.int_sl2[tabentry_save] = (int)room[x].slider[2].Value;
-                room[x].thepattern.int_prg[tabentry_save] = room[x].prg;
-                room[x].thepattern.int_bnk[tabentry_save] = room[x].bank;
-              
-            }
-        }
-        private void HandleChannelSelUnChecked(object sender, RoutedEventArgs e)
-        {
-            // throw new NotImplementedException();
-        }
-        private void HandleChannelSelChecked(object sender, RoutedEventArgs e)
-        {
-            ToggleButton toggle = sender as ToggleButton;
-            int m = (int)toggle.Tag;
-            for (int i = 0; i < numchannels; i++)
-            {
-                if (i != m)
-                {
-                    room[i].uniformGrid1.Visibility = Visibility.Collapsed;
-                    room[i].uniformGrid2.Visibility = Visibility.Collapsed;
-                    room[i].uniformGrid3.Visibility = Visibility.Collapsed;
-                    channelSel[i].IsChecked = false;
-                }
-                room[i].slider[0].Value = CommonData.BPM;
-
-            }
-           // Debug.WriteLine("ACTIVECHANNEL:" + activechannel);
-            activechannel = m;
-            //channelSel[m].IsChecked = true;
-            room[m].uniformGrid1.Visibility = Visibility.Visible;
-            room[m].uniformGrid2.Visibility = Visibility.Visible;
-            room[m].uniformGrid3.Visibility = Visibility.Visible;
-            bnkText.Text = room[activechannel].bank.ToString();
-            prgText.Text = room[activechannel].prg.ToString();
-        }
-
-        private void Slider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            var client = sliderclientDict[sender as Slider];
-            
-        }
-
-        //private async void Button_Click(object sender, RoutedEventArgs e)
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            // MediaElement mediaElement = new MediaElement();
-            // var synth = new Windows.Media.SpeechSynthesis.SpeechSynthesizer();
-            //  Windows.Media.SpeechSynthesis.SpeechSynthesisStream stream = await synth.SynthesizeTextToStreamAsync("Servas Wöd, I brauch a göd!");
-            // mediaElement.SetSource(stream, stream.ContentType);
-            //  mediaElement.Play();
-          //  Debug.WriteLine("Servas Wöd, I brauch a göd!");
-        }
-        private void Button_Click_1(object sender, RoutedEventArgs e)
-        {
-            vis = !vis;
-            Console.WriteLine("Servas Wöd, I brauch a göd!");
-            if (vis != true) { room[0].uniformGrid1.Visibility = Visibility.Collapsed; } else { room[0].uniformGrid1.Visibility = Visibility.Visible; }
-        }
-
-        //public async void DoSomething(short step)
-        public void DoSomething(short step)
-        // public static void DoSomething(short step)
-        {
-           // await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
-              Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
-            {
-                //var frame = new Frame();
-                //frame.Navigate(typeof(Frame2));
-                //  Window.Current.Content = frame;
-
-                for (short i = 0; i < 16; i++)
-                {
-                    led[i].Fill = new SolidColorBrush(Windows.UI.Colors.Black);
-                }
-
-                led[step].Fill = new SolidColorBrush(Windows.UI.Colors.Red);
-
-                // System.Threading.Thread.Sleep(1000);
-               // Debug.WriteLine("DA SRED, DA SERD, Na dA TASTk DA TASK, ER RENNT ER RENNNNNT!");
-            });
-        }
-
-       //***************UWP MIDI
-        private async Task EnumerateMidiInputDevices()
-        {
-            // Find all input MIDI devices
-            string midiInputQueryString = MidiInPort.GetDeviceSelector();
-            DeviceInformationCollection midiInputDevices = await DeviceInformation.FindAllAsync(midiInputQueryString);
-
-            midiInPortListBox.Items.Clear();
-
-            // Return if no external devices are connected
-            if (midiInputDevices.Count == 0)
-            {
-                this.midiInPortListBox.Items.Add("No MIDI input devices found!");
-                this.midiInPortListBox.IsEnabled = false;
-                return;
-            }
-
-            // Else, add each connected input device to the list
-            foreach (DeviceInformation deviceInfo in midiInputDevices)
-            {
-                this.midiInPortListBox.Items.Add(deviceInfo.Name);
-            }
-            this.midiInPortListBox.IsEnabled = true;
-        }
-        private async Task EnumerateMidiOutputDevices()
-        {
-
-            // Find all output MIDI devices
-            string midiOutportQueryString = MidiOutPort.GetDeviceSelector();
-            DeviceInformationCollection midiOutputDevices = await DeviceInformation.FindAllAsync(midiOutportQueryString);
-
-            midiOutPortListBox.Items.Clear();
-
-            // Return if no external devices are connected
-            if (midiOutputDevices.Count == 0)
-            {
-                this.midiOutPortListBox.Items.Add("No MIDI output devices found!");
-                this.midiOutPortListBox.IsEnabled = false;
-                return;
-            }
-
-            // Else, add each connected input device to the list
-            foreach (DeviceInformation deviceInfo in midiOutputDevices)
-            {
-                this.midiOutPortListBox.Items.Add(deviceInfo.Name);
-            }
-            this.midiOutPortListBox.IsEnabled = true;
-        }
-        private async void midiInPortListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var deviceInformationCollection = inputDeviceWatcher.DeviceInformationCollection;
-
-            if (deviceInformationCollection == null)
-            {
-                return;
-            }
-
-            DeviceInformation devInfo = deviceInformationCollection[midiInPortListBox.SelectedIndex];
-
-            if (devInfo == null)
-            {
-                return;
-            }
-
-            midiInPort = await MidiInPort.FromIdAsync(devInfo.Id);
-
-            if (midiInPort == null)
-            {
-                System.Diagnostics.Debug.WriteLine("Unable to create MidiInPort from input device");
-                return;
-            }
-            midiInPort.MessageReceived += MidiInPort_MessageReceived;
-         
-        }
-        private void MidiInPort_MessageReceived(MidiInPort sender, MidiMessageReceivedEventArgs args)
-        {
-            IMidiMessage receivedMidiMessage = args.Message;
-
-            System.Diagnostics.Debug.WriteLine(receivedMidiMessage.Timestamp.ToString());
-
-            if (receivedMidiMessage.Type == MidiMessageType.NoteOn)
-            {
-                System.Diagnostics.Debug.WriteLine(((MidiNoteOnMessage)receivedMidiMessage).Channel);
-                System.Diagnostics.Debug.WriteLine(((MidiNoteOnMessage)receivedMidiMessage).Note);
-                System.Diagnostics.Debug.WriteLine(((MidiNoteOnMessage)receivedMidiMessage).Velocity);
-            }
-        }
-        private async void midiOutPortListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var deviceInformationCollection = outputDeviceWatcher.DeviceInformationCollection;
-
-            if (deviceInformationCollection == null)
-            {
-                return;
-            }
-
-            DeviceInformation devInfo = deviceInformationCollection[midiOutPortListBox.SelectedIndex];
-
-            if (devInfo == null)
-            {
-                return;
-            }
-
-            midiOutPort = await MidiOutPort.FromIdAsync(devInfo.Id);
-
-            if (midiOutPort == null)
-            {
-                System.Diagnostics.Debug.WriteLine("Unable to create MidiOutPort from output device");
-                return;
-            }
-            playsequence.setMidiout(midiOutPort);
-        }
-
-        private async void midiOut1()
-        {
-            var deviceInformationCollection = outputDeviceWatcher.DeviceInformationCollection;
-
-            if (deviceInformationCollection == null)
-            {
-                return;
-            }
-
-            DeviceInformation devInfo = deviceInformationCollection[0];
-
-            if (devInfo == null)
-            {
-                return;
-            }
-
-            midiOutPort = await MidiOutPort.FromIdAsync(devInfo.Id);
-
-            if (midiOutPort == null)
-            {
-                System.Diagnostics.Debug.WriteLine("Unable to create MidiOutPort from output device");
-                return;
-            }
-
-        }
-
-        ///*** LAUNCHER CLASS *** NON MIDI
-        ///
-        public async void DefaultLaunch()
-        {
-            // Path to the file in the app package to launch
-            string imageFile = @"images\\myscript.cmd";
-
-            var file = await Windows.ApplicationModel.Package.Current.InstalledLocation.GetFileAsync(imageFile);
-
-            if (file != null)
-            {
-                // Launch the retrieved file
-                var success = await Windows.System.Launcher.LaunchFileAsync(file);
-
-                if (success)
-                {
-                    // File launched
-                }
-                else
-                {
-                    // File launch failed
-                }
-            }
-            else
-            {
-                Debug.WriteLine("NIXI FILE LAUNCH");
-                // Could not find file
-            }
-        }
-
-        private void Button_Click_2(object sender, RoutedEventArgs e)
-        {
-            //Debug.WriteLine("X: " + x + " Y: " + y + "Index:" + index + " Value:" + room[x].thepattern.vec_bs1[y, index]);
-            Debug.WriteLine(room[0].thepattern.vec_bs1[0, 0]);
-        }
-        ////   NAVIGATION MENU
-        ///
-        #region NavigationView event handlers
-        private void nvTopLevelNav_Loaded(object sender, RoutedEventArgs e)
-        {
-        }
-
-        private void nvTopLevelNav_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
-        {
-        }
-
-        private void nvTopLevelNav_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
-        {
-        }
-        #endregion
-        /////SQLLLL
-        public async Task get_tables()
+        private async Task create_dbTableAsync()
         {
             SqlCommand myCommand = new SqlCommand();
             SqlDataReader myReader = null;
@@ -879,20 +412,22 @@ namespace CSharp1
             bool tableexisted = false;
             try
             {
+                CommonData.SetConnection();
+                // Debug.WriteLine("DATABASE C: " + CommonData.Database);
                 //Commandtype --> Stored Procedure + Name der Prozedur angeben
-                //  myCommand.CommandText = "SELECT * FROM [TestDB].[dbo].[USERData]";
+                //  myCommand.CommandText = "SELECT * FROM [DefaultSeqDb].[dbo].[USERData]";
                 // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
                 myCommand.Connection = CommonData.MyCon.MyCon;
                 myCommand.CommandType = CommandType.Text;
-                myCommand.CommandText = " SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = '"+CommonData.Database+"'"; //GET TABLES IN DATABASE
+                myCommand.CommandText = " SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = '" + CommonData.Database + "'"; //GET TABLES IN DATABASE
                 CommonData.MyCon.openConnection();
                 myReader = myCommand.ExecuteReader();
-                if (CommonData.thesongs.Count() > 0) CommonData.thesongs.Clear();    //Clear the songs list to fill it again
+                // if (CommonData.thesongs.Count() > 0) CommonData.thesongs.Clear();    //Clear the songs list to fill it again
                 while (myReader.Read())
                 {
                     Debug.WriteLine("HOHO" + myReader[0].ToString());
 
-                    CommonData.setTheSongs(myReader[0].ToString());
+                    // CommonData.setTheSongs(myReader[0].ToString());
                     if (CommonData.Mytablename == myReader[0].ToString()) { tableexisted = true; }
                 }
                 Console.WriteLine("HOHO" + myReader[0].ToString());
@@ -909,43 +444,22 @@ namespace CSharp1
                 if (CommonData.MyCon.MyCon != null)
                     CommonData.MyCon.closeConnection();
             }
-
-        }
-        async public Task fill_table() {
-            SqlCommand myCommand = new SqlCommand();
-            SqlDataReader myReader = null;
+            if (!tableexisted)
             {
                 try
                 {
-                    SqlCommand mycommand = new SqlCommand();
                     myCommand.Connection = CommonData.MyCon.MyCon;
                     myCommand.CommandType = CommandType.Text;
-                    myCommand.CommandText = "UPDATE " + CommonData.Mytablename + " SET " + CommonData.theColummsUpd + "WHERE id=@id";
-                    Debug.WriteLine("Command TEXT: " + myCommand.CommandText);
-                    //myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id)" + " VALUES (@id)";
-                    // myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id," + CommonData.theColummsRaw + ")" + " VALUES (@id," + CommonData.theColummsVal + ")";
+                    myCommand.CommandText = "CREATE TABLE " + "USERAccounts" + " (id INTEGER , Username varchar(50),Passw VARCHAR(50))"; //GET TABLES IN DATABASE
+                    //myCommand.CommandText = "CREATE TABLE " + CommonData.Mytablename + " (id INTEGER , " + CommonData.theColumms + ")"; //GET TABLES IN DATABASE
                     CommonData.MyCon.openConnection();
-                    for (int i = 0; i < (16 * 5) * numentries; i++)
-                    {
-                        myCommand.Parameters.Clear();
-                        for (int x = 0; x < numchannels; x++)
-                        {
-                            String thestring = "@Channel" + x;
-                            //query.bindValue(thestring, room[x]->thepattern.vec_bs[i]);
-                            myCommand.Parameters.Add(thestring, SqlDbType.TinyInt).Value = room[x].thepattern.vec_bs[i];
-                        }
-                        myCommand.Parameters.Add("@id", SqlDbType.Int).Value = i;
-                        //myReader = myCommand.ExecuteReader();
-                        myCommand.ExecuteNonQuery();
-                    }
-                    CommonData.MyCon.closeConnection();
+                    myReader = myCommand.ExecuteReader();
                 }
                 catch (Exception ex)
                 {
-                   // MessageBox.Show(ex.Message);
-                 //    MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
-                //    await dialog.ShowAsync();
-                    Debug.WriteLine("FAIL!!", "Information " + ex.Message);
+                    // MessageBox.Show(ex.Message);
+                      MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
+                     await dialog.ShowAsync();
                 }
                 finally
                 {
@@ -953,32 +467,575 @@ namespace CSharp1
                         CommonData.MyCon.closeConnection();
                 }
             }
-
+        }
+            private void thebpmSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
             {
+                throw new NotImplementedException();
+            }
+
+            private void Enter_songname_KeyDown(object sender, KeyRoutedEventArgs e)
+            {
+                if (e.Key == Windows.System.VirtualKey.Enter)
+                {
+                    TextBox tbox = sender as TextBox;
+                    CommonData.Mytablename = tbox.Text;
+                    Debug.WriteLine("TABLENAME S: " + CommonData.Mytablename);
+                    myflyout1.Hide();
+                    create_table();
+                    fill_table();
+                }
+
+
+            }
+            private void SongListView_ItemClick1(object sender, ItemClickEventArgs e)
+            {
+                Debug.WriteLine("TABLENAME S: " + e.ClickedItem.ToString());
+                CommonData.Mytablename = e.ClickedItem.ToString();
+                myflyout1.Hide();
+                create_table();
+                fill_table();
+            }
+
+            private void SongListView_ItemClick(object sender, ItemClickEventArgs e)
+            {
+                Debug.WriteLine("TABLENAME S: " + e.ClickedItem.ToString());
+                CommonData.Mytablename = e.ClickedItem.ToString();
+                myflyout.Hide();
+                load_table();
+
+            }
+
+            private void HandlesaveSlotChecked(object sender, RoutedEventArgs e)
+            {
+                ToggleButton toggle = sender as ToggleButton;
+                int m = (int)toggle.Tag;
+                tabentry_save = m;
+                for (int i = 0; i < numchannels; i++)
+                {
+                    if (i != m)
+                    {
+                        saveSlot[i].IsChecked = false;
+                    }
+                }
+            }
+
+
+
+
+            private async void HandleloadFromDBButtonChecked(object sender, RoutedEventArgs e)
+            {
+                songListView.Items.Clear();
+                get_tables();
+                // if (CommonData.thesongs.Count()>0) CommonData.thesongs.Clear();
+
+                for (var i = 0; i < CommonData.thesongs.Count; i++)
+                {
+
+                    songListView.Items.Add(CommonData.thesongs[i]);
+                }
+                //  await load_table();
+            }
+
+            private async void HandlesaveTODBButtonClick(object sender, RoutedEventArgs e)
+            {
+                songListView1.Items.Clear();
+                get_tables();
+                // if (CommonData.thesongs.Count() > 0) CommonData.thesongs.Clear();
+                for (var i = 0; i < CommonData.thesongs.Count; i++)
+                {
+
+                    songListView1.Items.Add(CommonData.thesongs[i]);
+                }
+            }
+
+            private void HandlebnkButtonClicked(object sender, RoutedEventArgs e)
+            {
+                //    throw new NotImplementedException();
+                Button button = sender as Button;
+                int m = (int)button.Tag;
+                room[activechannel].bank += m > 0 ? (room[activechannel].bank < 1) ? 0 : -1 : 1;
+                bankchangeme(activechannel, room[activechannel].bank);
+                prgchangeme(activechannel, room[activechannel].prg);
+                bnkText.Text = room[activechannel].bank.ToString();
+
+            }
+            private void HandleprgButtonClicked(object sender, RoutedEventArgs e)
+            {
+                Button button = sender as Button;
+                int m = (int)button.Tag;
+                room[activechannel].prg += m > 0 ? (room[activechannel].prg < 1) ? 0 : -1 : 1;
+                prgchangeme(activechannel, room[activechannel].prg);
+                prgText.Text = room[activechannel].prg.ToString();
+                ////    throw new NotImplementedException();
+                //  bankchangeme(channel,bank)
+                // throw new NotImplementedException();
+            }
+
+            private void HandleplayButtonClicked(object sender, RoutedEventArgs e)
+            {
+                //  this.Frame.Navigate(typeof(BlankPage1));
+                //  Debug.WriteLine(" SELECTED: "+ midiOutPortListBox.SelectedIndex);
+                if (!midiset && midiOutPortListBox.SelectedIndex == -1) {
+                    midiOutPortListBox.SelectedIndex = 0;
+                    midiOut1();
+                    playsequence.setMidiout(midiOutPort);
+                    midiset = true; }
+
+                playsequence.isplaying = !playsequence.isplaying;
+                Debug.WriteLine("PLAY");
+                Debug.WriteLine("MIDI ITEMS: " + midiOutPortListBox.Items.Count);
+            }
+
+            private async void HandleloadSlotChecked(object sender, RoutedEventArgs e)
+            {
+                //  throw new NotImplementedException();
+                ToggleButton toggle = sender as ToggleButton;
+                int m = (int)toggle.Tag;
+                tabentry = m;
+                for (int i = 0; i < numchannels; i++)
+                {
+                    if (i != m)
+                    {
+                        loadSlot[i].IsChecked = false;
+                    }
+                }
+                //
+                for (int x = 0; x < numchannels; x++)
+                {
+                    room[x].pattern_load_struct(tabentry);
+                    //room[x].slider[1].SetValue(room[x].thepattern.int_vs[tabentry]));
+                    room[x].slider[1].Value = room[x].thepattern.int_vs[tabentry];
+                    room[x].slider[2].Value = room[x].thepattern.int_sl2[tabentry];
+
+                    room[x].prg = room[x].thepattern.int_prg[tabentry];
+
+                    room[x].bank = room[x].thepattern.int_bnk[tabentry];
+
+                    bankchangeme(x, room[x].bank);
+                    prgchangeme(x, room[x].prg);
+                    vol_value(x, room[x].thepattern.int_vs[tabentry]);
+                    bnkText.Text = room[activechannel].bank.ToString();
+                    prgText.Text = room[activechannel].prg.ToString();
+                }
+            }
+            public static void bpm_value(int thevalue)
+            {
+                playsequence.thebpm = thevalue;
+                playsequence.ms = ((60000.0 / (double)thevalue) / (double)4);
+                playsequence.dur = playsequence.ms;
+                //  Debug.WriteLine("MS: " + playsequence.ms);
+
+            }
+            public void setbpmslidershack(int thevalue)
+            {
+                for (int i = 0; i < numchannels; i++)
+                {
+                    room[i].slider[0].Value = thevalue;
+                }
+            }
+            public static void vol_value(int x, int v)
+            {
+                IMidiMessage midiMessageToSend = new MidiControlChangeMessage((byte)x, 7, (byte)v);
+                midiOutPort.SendMessage(midiMessageToSend);
+            }
+
+            public static void prgchangeme(int x, int prg)
+            {
+                IMidiMessage midiMessageToSend1 = new MidiProgramChangeMessage((byte)x, (byte)prg);
+                midiOutPort.SendMessage(midiMessageToSend1);
+            }
+
+            public static void bankchangeme(int x, int bank)
+            {
+                byte channel = (byte)x;
+                byte controller = 0;
+                byte controlValue = (byte)bank;
+                //  byte prg = (byte)room[x].prg;
+                IMidiMessage midiMessageToSend = new MidiControlChangeMessage(channel, controller, controlValue);
+                // IMidiMessage midiMessageToSend1 = new MidiProgramChangeMessage(channel, prg);
+                midiOutPort.SendMessage(midiMessageToSend);
+                //  midiOutPort.SendMessage(midiMessageToSend1);
+            }
+            public void checkit()
+            {
+                // Debug.WriteLine("CHECK IT !!!!!!!!!!!!!!!!!! : " );
+                //  Debug.WriteLine(room[0].thepattern.vec_bs1[0, 0]);
+            }
+            public void sendMidiMessage(int i, int j, int index)
+            {
+
+                //for (int x = 0; x < 15; x++)
+                //{
+                //   // ALL NOTES OF
+                //    IMidiMessage midiMessageToSend = new MidiControlChangeMessage((byte)(x), (byte)123, (byte)0);
+                //    midiOutPort.SendMessage(midiMessageToSend);
+                //}
+
+                //for (int x = 0; x < 10; x++)
+                //{
+                //    for (int y = 0; y < 5; y++)
+                //    {                 
+                //        if (room[x].thepattern.vec_bs1[y,index] == 1 && room[x].thepattern.vec_m_bs1[y]== 1)
+                //        {                   
+                //            byte channel = (byte)x;
+                //            byte note = (byte)(35 + y);
+                //            byte velocity = 100;
+
+                //            IMidiMessage midiMessageToSend = new MidiNoteOnMessage(channel, note, velocity);
+                //            midiOutPort.SendMessage(midiMessageToSend);
+                //        }
+                //    }
+                //}
+                DoSomething((short)index);
+            }
+            private void HandlesavePatternChecked(object sender, RoutedEventArgs e)
+            {
+                // ToggleButton toggle = sender as ToggleButton;
+                // int m = (int)toggle.Tag;
+                for (int x = 0; x < 10; x++)
+                {
+                    room[x].pattern_save_struct(tabentry_save);
+                    room[x].thepattern.int_vs[tabentry_save] = (int)room[x].slider[1].Value;
+                    room[x].thepattern.int_sl2[tabentry_save] = (int)room[x].slider[2].Value;
+                    room[x].thepattern.int_prg[tabentry_save] = room[x].prg;
+                    room[x].thepattern.int_bnk[tabentry_save] = room[x].bank;
+
+                }
+            }
+            private void HandleChannelSelUnChecked(object sender, RoutedEventArgs e)
+            {
+                // throw new NotImplementedException();
+            }
+            private void HandleChannelSelChecked(object sender, RoutedEventArgs e)
+            {
+                ToggleButton toggle = sender as ToggleButton;
+                int m = (int)toggle.Tag;
+                for (int i = 0; i < numchannels; i++)
+                {
+                    if (i != m)
+                    {
+                        room[i].uniformGrid1.Visibility = Visibility.Collapsed;
+                        room[i].uniformGrid2.Visibility = Visibility.Collapsed;
+                        room[i].uniformGrid3.Visibility = Visibility.Collapsed;
+                        channelSel[i].IsChecked = false;
+                    }
+                    room[i].slider[0].Value = CommonData.BPM;
+
+                }
+                // Debug.WriteLine("ACTIVECHANNEL:" + activechannel);
+                activechannel = m;
+                //channelSel[m].IsChecked = true;
+                room[m].uniformGrid1.Visibility = Visibility.Visible;
+                room[m].uniformGrid2.Visibility = Visibility.Visible;
+                room[m].uniformGrid3.Visibility = Visibility.Visible;
+                bnkText.Text = room[activechannel].bank.ToString();
+                prgText.Text = room[activechannel].prg.ToString();
+            }
+
+            private void Slider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+            {
+                var client = sliderclientDict[sender as Slider];
+
+            }
+
+            //private async void Button_Click(object sender, RoutedEventArgs e)
+            private void Button_Click(object sender, RoutedEventArgs e)
+            {
+                // MediaElement mediaElement = new MediaElement();
+                // var synth = new Windows.Media.SpeechSynthesis.SpeechSynthesizer();
+                //  Windows.Media.SpeechSynthesis.SpeechSynthesisStream stream = await synth.SynthesizeTextToStreamAsync("Servas Wöd, I brauch a göd!");
+                // mediaElement.SetSource(stream, stream.ContentType);
+                //  mediaElement.Play();
+                //  Debug.WriteLine("Servas Wöd, I brauch a göd!");
+            }
+            private void Button_Click_1(object sender, RoutedEventArgs e)
+            {
+                vis = !vis;
+                Console.WriteLine("Servas Wöd, I brauch a göd!");
+                if (vis != true) { room[0].uniformGrid1.Visibility = Visibility.Collapsed; } else { room[0].uniformGrid1.Visibility = Visibility.Visible; }
+            }
+
+            //public async void DoSomething(short step)
+            public void DoSomething(short step)
+            // public static void DoSomething(short step)
+            {
+                // await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+              {
+                  //var frame = new Frame();
+                  //frame.Navigate(typeof(Frame2));
+                  //  Window.Current.Content = frame;
+
+                  for (short i = 0; i < 16; i++)
+                  {
+                      led[i].Fill = new SolidColorBrush(Windows.UI.Colors.Black);
+                  }
+
+                  led[step].Fill = new SolidColorBrush(Windows.UI.Colors.Red);
+
+                  // System.Threading.Thread.Sleep(1000);
+                  // Debug.WriteLine("DA SRED, DA SERD, Na dA TASTk DA TASK, ER RENNT ER RENNNNNT!");
+              });
+            }
+
+            //***************UWP MIDI
+            private async Task EnumerateMidiInputDevices()
+            {
+                // Find all input MIDI devices
+                string midiInputQueryString = MidiInPort.GetDeviceSelector();
+                DeviceInformationCollection midiInputDevices = await DeviceInformation.FindAllAsync(midiInputQueryString);
+
+                midiInPortListBox.Items.Clear();
+
+                // Return if no external devices are connected
+                if (midiInputDevices.Count == 0)
+                {
+                    this.midiInPortListBox.Items.Add("No MIDI input devices found!");
+                    this.midiInPortListBox.IsEnabled = false;
+                    return;
+                }
+
+                // Else, add each connected input device to the list
+                foreach (DeviceInformation deviceInfo in midiInputDevices)
+                {
+                    this.midiInPortListBox.Items.Add(deviceInfo.Name);
+                }
+                this.midiInPortListBox.IsEnabled = true;
+            }
+            private async Task EnumerateMidiOutputDevices()
+            {
+
+                // Find all output MIDI devices
+                string midiOutportQueryString = MidiOutPort.GetDeviceSelector();
+                DeviceInformationCollection midiOutputDevices = await DeviceInformation.FindAllAsync(midiOutportQueryString);
+
+                midiOutPortListBox.Items.Clear();
+
+                // Return if no external devices are connected
+                if (midiOutputDevices.Count == 0)
+                {
+                    this.midiOutPortListBox.Items.Add("No MIDI output devices found!");
+                    this.midiOutPortListBox.IsEnabled = false;
+                    return;
+                }
+
+                // Else, add each connected input device to the list
+                foreach (DeviceInformation deviceInfo in midiOutputDevices)
+                {
+                    this.midiOutPortListBox.Items.Add(deviceInfo.Name);
+                }
+                this.midiOutPortListBox.IsEnabled = true;
+            }
+            private async void midiInPortListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+            {
+                var deviceInformationCollection = inputDeviceWatcher.DeviceInformationCollection;
+
+                if (deviceInformationCollection == null)
+                {
+                    return;
+                }
+
+                DeviceInformation devInfo = deviceInformationCollection[midiInPortListBox.SelectedIndex];
+
+                if (devInfo == null)
+                {
+                    return;
+                }
+
+                midiInPort = await MidiInPort.FromIdAsync(devInfo.Id);
+
+                if (midiInPort == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("Unable to create MidiInPort from input device");
+                    return;
+                }
+                midiInPort.MessageReceived += MidiInPort_MessageReceived;
+
+            }
+            private void MidiInPort_MessageReceived(MidiInPort sender, MidiMessageReceivedEventArgs args)
+            {
+                IMidiMessage receivedMidiMessage = args.Message;
+
+                System.Diagnostics.Debug.WriteLine(receivedMidiMessage.Timestamp.ToString());
+
+                if (receivedMidiMessage.Type == MidiMessageType.NoteOn)
+                {
+                    System.Diagnostics.Debug.WriteLine(((MidiNoteOnMessage)receivedMidiMessage).Channel);
+                    System.Diagnostics.Debug.WriteLine(((MidiNoteOnMessage)receivedMidiMessage).Note);
+                    System.Diagnostics.Debug.WriteLine(((MidiNoteOnMessage)receivedMidiMessage).Velocity);
+                }
+            }
+            private async void midiOutPortListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+            {
+                var deviceInformationCollection = outputDeviceWatcher.DeviceInformationCollection;
+
+                if (deviceInformationCollection == null)
+                {
+                    return;
+                }
+
+                DeviceInformation devInfo = deviceInformationCollection[midiOutPortListBox.SelectedIndex];
+
+                if (devInfo == null)
+                {
+                    return;
+                }
+
+                midiOutPort = await MidiOutPort.FromIdAsync(devInfo.Id);
+
+                if (midiOutPort == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("Unable to create MidiOutPort from output device");
+                    return;
+                }
+                playsequence.setMidiout(midiOutPort);
+            }
+
+            private async void midiOut1()
+            {
+                var deviceInformationCollection = outputDeviceWatcher.DeviceInformationCollection;
+
+                if (deviceInformationCollection == null)
+                {
+                    return;
+                }
+
+                DeviceInformation devInfo = deviceInformationCollection[0];
+
+                if (devInfo == null)
+                {
+                    return;
+                }
+
+                midiOutPort = await MidiOutPort.FromIdAsync(devInfo.Id);
+
+                if (midiOutPort == null)
+                {
+                    System.Diagnostics.Debug.WriteLine("Unable to create MidiOutPort from output device");
+                    return;
+                }
+
+            }
+
+            ///*** LAUNCHER CLASS *** NON MIDI
+            ///
+            public async void DefaultLaunch()
+            {
+                // Path to the file in the app package to launch
+                string imageFile = @"images\\myscript.cmd";
+
+                var file = await Windows.ApplicationModel.Package.Current.InstalledLocation.GetFileAsync(imageFile);
+
+                if (file != null)
+                {
+                    // Launch the retrieved file
+                    var success = await Windows.System.Launcher.LaunchFileAsync(file);
+
+                    if (success)
+                    {
+                        // File launched
+                    }
+                    else
+                    {
+                        // File launch failed
+                    }
+                }
+                else
+                {
+                    Debug.WriteLine("NIXI FILE LAUNCH");
+                    // Could not find file
+                }
+            }
+
+            private void Button_Click_2(object sender, RoutedEventArgs e)
+            {
+                //Debug.WriteLine("X: " + x + " Y: " + y + "Index:" + index + " Value:" + room[x].thepattern.vec_bs1[y, index]);
+                Debug.WriteLine(room[0].thepattern.vec_bs1[0, 0]);
+            }
+            ////   NAVIGATION MENU
+            ///
+            #region NavigationView event handlers
+            private void nvTopLevelNav_Loaded(object sender, RoutedEventArgs e)
+            {
+            }
+
+            private void nvTopLevelNav_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+            {
+            }
+
+            private void nvTopLevelNav_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+            {
+            }
+            #endregion
+            /////SQLLLL
+            public async Task get_tables()
+            {
+                SqlCommand myCommand = new SqlCommand();
+                SqlDataReader myReader = null;
+
+                bool tableexisted = false;
+                try
+                {
+                    CommonData.SetConnection();
+                    Debug.WriteLine("DATABASE C: " + CommonData.Database);
+                    //Commandtype --> Stored Procedure + Name der Prozedur angeben
+                    //  myCommand.CommandText = "SELECT * FROM [myDBSeqAccounts].[dbo].[USERData]";
+                    // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
+                    myCommand.Connection = CommonData.MyCon.MyCon;
+                    myCommand.CommandType = CommandType.Text;
+                    myCommand.CommandText = " SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = '" + CommonData.Database + "'"; //GET TABLES IN DATABASE
+                    CommonData.MyCon.openConnection();
+                    myReader = myCommand.ExecuteReader();
+                    if (CommonData.thesongs.Count() > 0) CommonData.thesongs.Clear();    //Clear the songs list to fill it again
+                    while (myReader.Read())
+                    {
+                        Debug.WriteLine("HOHO" + myReader[0].ToString());
+
+                        CommonData.setTheSongs(myReader[0].ToString());
+                        if (CommonData.Mytablename == myReader[0].ToString()) { tableexisted = true; }
+                    }
+                    Console.WriteLine("HOHO" + myReader[0].ToString());
+                    //Console.WriteLine(myReader[0].ToString() + "" + myReader[1].ToString());                       
+                }
+                catch (Exception ex)
+                {
+                    // MessageBox.Show(ex.Message);
+                    //  MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
+                    // await dialog.ShowAsync();
+                }
+                finally
+                {
+                    if (CommonData.MyCon.MyCon != null)
+                        CommonData.MyCon.closeConnection();
+                }
+
+            }
+            async public Task fill_table() {
+                SqlCommand myCommand = new SqlCommand();
+                SqlDataReader myReader = null;
                 {
                     try
                     {
+                        CommonData.SetConnection();
+                        Debug.WriteLine("DATABASE C: " + CommonData.Database);
                         SqlCommand mycommand = new SqlCommand();
                         myCommand.Connection = CommonData.MyCon.MyCon;
                         myCommand.CommandType = CommandType.Text;
-                        myCommand.CommandText = "UPDATE " + CommonData.Mytablename + " SET " + CommonData.theColummsUpdSingle + "WHERE id=@id";
+                        myCommand.CommandText = "UPDATE " + CommonData.Mytablename + " SET " + CommonData.theColummsUpd + "WHERE id=@id";
                         Debug.WriteLine("Command TEXT: " + myCommand.CommandText);
                         //myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id)" + " VALUES (@id)";
                         // myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id," + CommonData.theColummsRaw + ")" + " VALUES (@id," + CommonData.theColummsVal + ")";
                         CommonData.MyCon.openConnection();
-                        for (int x = 0; x < numchannels; x++)
+                        for (int i = 0; i < (16 * 5) * numentries; i++)
                         {
                             myCommand.Parameters.Clear();
-                            for (int y = 0; y < numchannels; y++)
+                            for (int x = 0; x < numchannels; x++)
                             {
-                                String thestring = "@Volume" + y;
-                                myCommand.Parameters.Add(thestring, SqlDbType.TinyInt).Value = room[y].thepattern.int_vs[x];
-                                thestring = "@Bank" + y;
-                                myCommand.Parameters.Add(thestring, SqlDbType.TinyInt).Value = room[y].thepattern.int_bnk[x];
-                                thestring = "@Prg" + y;
-                                myCommand.Parameters.Add(thestring, SqlDbType.TinyInt).Value = room[y].thepattern.int_prg[x];
-                            }                           
-                            myCommand.Parameters.Add("@id", SqlDbType.Int).Value = (x);
+                                String thestring = "@Channel" + x;
+                                //query.bindValue(thestring, room[x]->thepattern.vec_bs[i]);
+                                myCommand.Parameters.Add(thestring, SqlDbType.TinyInt).Value = room[x].thepattern.vec_bs[i];
+                            }
+                            myCommand.Parameters.Add("@id", SqlDbType.Int).Value = i;
                             //myReader = myCommand.ExecuteReader();
                             myCommand.ExecuteNonQuery();
                         }
@@ -998,150 +1055,177 @@ namespace CSharp1
                     }
                 }
 
-
-            }
-
-
-
-        }
-
-        public async Task load_table()
-        {
-          { 
-            SqlCommand myCommand = new SqlCommand();
-            SqlDataReader myReader = null;
-            // bool tableexisted = false;
-            try
-            {
-                //Commandtype --> Stored Procedure + Name der Prozedur angeben
-                //  myCommand.CommandText = "SELECT * FROM [TestDB].[dbo].[USERData]";
-                // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
-                myCommand.Connection = CommonData.MyCon.MyCon;
-                myCommand.CommandType = CommandType.Text;
-                myCommand.CommandText = "SELECT* FROM " + CommonData.Mytablename + "";
-                CommonData.MyCon.openConnection();
-                myReader = myCommand.ExecuteReader();
-
-                while (myReader.Read())
                 {
-                    for (int i = 0; i < numchannels; i++)
                     {
-                        //reader.GetInt32(reader.GetOrdinal(columnName));
-                        room[i].thepattern.vec_bs[myReader.GetInt32(0)] = myReader.GetByte(i + 1);
-                        //Debug.WriteLine("READ BSTATE" + myReader[0].ToString());
+                        try
+                        {
+                            SqlCommand mycommand = new SqlCommand();
+                            myCommand.Connection = CommonData.MyCon.MyCon;
+                            myCommand.CommandType = CommandType.Text;
+                            myCommand.CommandText = "UPDATE " + CommonData.Mytablename + " SET " + CommonData.theColummsUpdSingle + "WHERE id=@id";
+                            Debug.WriteLine("Command TEXT: " + myCommand.CommandText);
+                            //myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id)" + " VALUES (@id)";
+                            // myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id," + CommonData.theColummsRaw + ")" + " VALUES (@id," + CommonData.theColummsVal + ")";
+                            CommonData.MyCon.openConnection();
+                            for (int x = 0; x < numchannels; x++)
+                            {
+                                myCommand.Parameters.Clear();
+                                for (int y = 0; y < numchannels; y++)
+                                {
+                                    String thestring = "@Volume" + y;
+                                    myCommand.Parameters.Add(thestring, SqlDbType.TinyInt).Value = room[y].thepattern.int_vs[x];
+                                    thestring = "@Bank" + y;
+                                    myCommand.Parameters.Add(thestring, SqlDbType.TinyInt).Value = room[y].thepattern.int_bnk[x];
+                                    thestring = "@Prg" + y;
+                                    myCommand.Parameters.Add(thestring, SqlDbType.TinyInt).Value = room[y].thepattern.int_prg[x];
+                                }
+                                myCommand.Parameters.Add("@id", SqlDbType.Int).Value = (x);
+                                //myReader = myCommand.ExecuteReader();
+                                myCommand.ExecuteNonQuery();
+                            }
+                            CommonData.MyCon.closeConnection();
+                        }
+                        catch (Exception ex)
+                        {
+                            // MessageBox.Show(ex.Message);
+                            //    MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
+                            //    await dialog.ShowAsync();
+                            Debug.WriteLine("FAIL!!", "Information " + ex.Message);
+                        }
+                        finally
+                        {
+                            if (CommonData.MyCon.MyCon != null)
+                                CommonData.MyCon.closeConnection();
+                        }
                     }
+
+
                 }
 
+
+
             }
-            catch (Exception ex)
+
+            public async Task load_table()
             {
-                // MessageBox.Show(ex.Message);
-                //  MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
-                // await dialog.ShowAsync();
-            }
-            finally
-            {
-                if (CommonData.MyCon.MyCon != null)
-                    CommonData.MyCon.closeConnection();
-            }
-          }
-            {
-                SqlCommand myCommand = new SqlCommand();
-                SqlDataReader myReader = null;
-                // bool tableexisted = false;
-                try
                 {
-                    //Commandtype --> Stored Procedure + Name der Prozedur angeben
-                    //  myCommand.CommandText = "SELECT * FROM [TestDB].[dbo].[USERData]";
-                    // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
-                    myCommand.Connection = CommonData.MyCon.MyCon;
-                    myCommand.CommandType = CommandType.Text;
-                    myCommand.CommandText = "SELECT id, " + CommonData.theColummsSingleRaw + " FROM " + CommonData.Mytablename + " WHERE id=@id";
-                    CommonData.MyCon.openConnection();
-                    for (int i = 0; i < numchannels; i++)
+                    SqlCommand myCommand = new SqlCommand();
+                    SqlDataReader myReader = null;
+                    // bool tableexisted = false;
+                    try
                     {
-                        myCommand.Parameters.Clear();
-                        myCommand.Parameters.Add("@id", SqlDbType.Int).Value = i;
-                        //  query.bindValue(":rowid", (i + 1));
+                        CommonData.SetConnection();
+                        Debug.WriteLine("DATABASE L: " + CommonData.Database);
+                        //Commandtype --> Stored Procedure + Name der Prozedur angeben
+                        //  myCommand.CommandText = "SELECT * FROM [myDBSeqAccounts].[dbo].[USERData]";
+                        // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
+                        myCommand.Connection = CommonData.MyCon.MyCon;
+                        myCommand.CommandType = CommandType.Text;
+                        myCommand.CommandText = "SELECT* FROM " + CommonData.Mytablename + "";
+                        CommonData.MyCon.openConnection();
                         myReader = myCommand.ExecuteReader();
 
                         while (myReader.Read())
                         {
-                            for (int j = 0; j < numchannels; j++)
+                            for (int i = 0; i < numchannels; i++)
                             {
-                                room[j].thepattern.int_vs[myReader.GetInt32(0)] = myReader.GetByte(j + 1);
-                               // Debug.WriteLine("VOL:"+myReader.GetByte(j + 1));
-                                room[j].thepattern.int_bnk[myReader.GetInt32(0)] = myReader.GetByte(((j + 1) + (numchannels)));
-
-                                room[j].thepattern.int_prg[myReader.GetInt32(0)] = myReader.GetByte(((j + 1) + (numchannels * 2)));
-                              //  Debug.WriteLine("DONE");
+                                //reader.GetInt32(reader.GetOrdinal(columnName));
+                                room[i].thepattern.vec_bs[myReader.GetInt32(0)] = myReader.GetByte(i + 1);
+                                //Debug.WriteLine("READ BSTATE" + myReader[0].ToString());
                             }
-
                         }
-                        myReader.Close();
+
+                    }
+                    catch (Exception ex)
+                    {
+                        // MessageBox.Show(ex.Message);
+                        //  MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
+                        // await dialog.ShowAsync();
+                    }
+                    finally
+                    {
+                        if (CommonData.MyCon.MyCon != null)
+                            CommonData.MyCon.closeConnection();
                     }
                 }
-                catch (Exception ex)
                 {
-                    // MessageBox.Show(ex.Message);
-                    //  MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
-                    // await dialog.ShowAsync();
-                    Debug.WriteLine("FAIL FAIL " + ex.Message);
+                    SqlCommand myCommand = new SqlCommand();
+                    SqlDataReader myReader = null;
+                    // bool tableexisted = false;
+                    try
+                    {
+                        //Commandtype --> Stored Procedure + Name der Prozedur angeben
+                        //  myCommand.CommandText = "SELECT * FROM [myDBSeqAccounts].[dbo].[USERData]";
+                        // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
+                        myCommand.Connection = CommonData.MyCon.MyCon;
+                        myCommand.CommandType = CommandType.Text;
+                        myCommand.CommandText = "SELECT id, " + CommonData.theColummsSingleRaw + " FROM " + CommonData.Mytablename + " WHERE id=@id";
+                        CommonData.MyCon.openConnection();
+                        for (int i = 0; i < numchannels; i++)
+                        {
+                            myCommand.Parameters.Clear();
+                            myCommand.Parameters.Add("@id", SqlDbType.Int).Value = i;
+                            //  query.bindValue(":rowid", (i + 1));
+                            myReader = myCommand.ExecuteReader();
+
+                            while (myReader.Read())
+                            {
+                                for (int j = 0; j < numchannels; j++)
+                                {
+                                    room[j].thepattern.int_vs[myReader.GetInt32(0)] = myReader.GetByte(j + 1);
+                                    // Debug.WriteLine("VOL:"+myReader.GetByte(j + 1));
+                                    room[j].thepattern.int_bnk[myReader.GetInt32(0)] = myReader.GetByte(((j + 1) + (numchannels)));
+
+                                    room[j].thepattern.int_prg[myReader.GetInt32(0)] = myReader.GetByte(((j + 1) + (numchannels * 2)));
+                                    //  Debug.WriteLine("DONE");
+                                }
+
+                            }
+                            myReader.Close();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // MessageBox.Show(ex.Message);
+                        //  MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
+                        // await dialog.ShowAsync();
+                        Debug.WriteLine("FAIL FAIL " + ex.Message);
+                    }
+                    finally
+                    {
+                        if (CommonData.MyCon.MyCon != null)
+                            CommonData.MyCon.closeConnection();
+                    }
                 }
-                finally
-                {
-                    if (CommonData.MyCon.MyCon != null)
-                        CommonData.MyCon.closeConnection();
-                }
             }
-        }
-        public async Task create_table()
-        {
-               SqlCommand myCommand = new SqlCommand();
-               SqlDataReader myReader = null;
-            
-               bool tableexisted = false;
-            try
+            public async Task create_table()
             {
-                //Commandtype --> Stored Procedure + Name der Prozedur angeben
-                //  myCommand.CommandText = "SELECT * FROM [TestDB].[dbo].[USERData]";
-                // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
-                myCommand.Connection = CommonData.MyCon.MyCon;
-                myCommand.CommandType = CommandType.Text;
-                myCommand.CommandText = " SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = '" + CommonData.Database + "'"; //GET TABLES IN DATABASE
-                CommonData.MyCon.openConnection();
-                myReader = myCommand.ExecuteReader();
-               // if (CommonData.thesongs.Count() > 0) CommonData.thesongs.Clear();    //Clear the songs list to fill it again
-                while (myReader.Read())
-                {
-                    Debug.WriteLine("HOHO" + myReader[0].ToString());
-                   
-                   // CommonData.setTheSongs(myReader[0].ToString());
-                    if (CommonData.Mytablename == myReader[0].ToString()) { tableexisted = true; } 
-                }
-               Console.WriteLine("HOHO" + myReader[0].ToString());
-                //Console.WriteLine(myReader[0].ToString() + "" + myReader[1].ToString());                       
-            }
-            catch (Exception ex)
-            {
-                // MessageBox.Show(ex.Message);
-              //  MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
-               // await dialog.ShowAsync();
-            }
-            finally
-            {
-                if (CommonData.MyCon.MyCon != null)
-                    CommonData.MyCon.closeConnection();
-            }
-            if (!tableexisted)
-            {
+                SqlCommand myCommand = new SqlCommand();
+                SqlDataReader myReader = null;
+
+                bool tableexisted = false;
                 try
                 {
+                    CommonData.SetConnection();
+                    // Debug.WriteLine("DATABASE C: " + CommonData.Database);
+                    //Commandtype --> Stored Procedure + Name der Prozedur angeben
+                    //  myCommand.CommandText = "SELECT * FROM [myDBSeqAccounts].[dbo].[USERData]";
+                    // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
                     myCommand.Connection = CommonData.MyCon.MyCon;
                     myCommand.CommandType = CommandType.Text;
-                    myCommand.CommandText = "CREATE TABLE " + CommonData.Mytablename + " (id INTEGER , " + CommonData.theColumms + ")"; //GET TABLES IN DATABASE
+                    myCommand.CommandText = " SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = '" + CommonData.Database + "'"; //GET TABLES IN DATABASE
                     CommonData.MyCon.openConnection();
                     myReader = myCommand.ExecuteReader();
+                    // if (CommonData.thesongs.Count() > 0) CommonData.thesongs.Clear();    //Clear the songs list to fill it again
+                    while (myReader.Read())
+                    {
+                        Debug.WriteLine("HOHO" + myReader[0].ToString());
+
+                        // CommonData.setTheSongs(myReader[0].ToString());
+                        if (CommonData.Mytablename == myReader[0].ToString()) { tableexisted = true; }
+                    }
+                    Console.WriteLine("HOHO" + myReader[0].ToString());
+                    //Console.WriteLine(myReader[0].ToString() + "" + myReader[1].ToString());                       
                 }
                 catch (Exception ex)
                 {
@@ -1154,55 +1238,129 @@ namespace CSharp1
                     if (CommonData.MyCon.MyCon != null)
                         CommonData.MyCon.closeConnection();
                 }
+                if (!tableexisted)
+                {
+                    try
+                    {
+                        myCommand.Connection = CommonData.MyCon.MyCon;
+                        myCommand.CommandType = CommandType.Text;
+                        myCommand.CommandText = "CREATE TABLE " + CommonData.Mytablename + " (id INTEGER , " + CommonData.theColumms + ")"; //GET TABLES IN DATABASE
+                        CommonData.MyCon.openConnection();
+                        myReader = myCommand.ExecuteReader();
+                    }
+                    catch (Exception ex)
+                    {
+                        // MessageBox.Show(ex.Message);
+                        //  MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
+                        // await dialog.ShowAsync();
+                    }
+                    finally
+                    {
+                        if (CommonData.MyCon.MyCon != null)
+                            CommonData.MyCon.closeConnection();
+                    }
+                    //
+
+
+                    {
+                        try
+                        {
+                            SqlCommand mycommand = new SqlCommand();
+                            myCommand.Connection = CommonData.MyCon.MyCon;
+                            myCommand.CommandType = CommandType.Text;
+                            myCommand.CommandText = "INSERT INTO " + CommonData.Mytablename + "(id)" + " VALUES (@id)";
+                            // myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id," + CommonData.theColummsRaw + ")" + " VALUES (@id," + CommonData.theColummsVal + ")";
+                            CommonData.MyCon.openConnection();
+                            for (int i = 0; i < (16 * 5) * numentries; i++)
+                            {
+                                myCommand.Parameters.Clear();
+                                //Debug.WriteLine("INSERT INTO" + i);
+                                //myCommand.Parameters.AddWithValue("parentId", 1);
+                                myCommand.Parameters.Add("@id", SqlDbType.Int).Value = i;
+                                // myCommand.Parameters.AddWithValue("id", i);
+
+
+                                //myReader = myCommand.ExecuteReader();
+                                myCommand.ExecuteNonQuery();
+
+                            }
+                            CommonData.MyCon.closeConnection();
+                        }
+                        catch (Exception ex)
+                        {
+                            //MessageBox.Show(ex.Message);
+                            // MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
+                            //await dialog.ShowAsync();
+                            Debug.WriteLine("FAIL!!", "Information " + ex.Message);
+                        }
+                        finally
+                        {
+                            if (CommonData.MyCon.MyCon != null)
+                                CommonData.MyCon.closeConnection();
+                        }
+                    }
+
+                }
                 //
-           
-          
-            { 
+            }
+       
+            /////DATABASE CREATE GET DB
+            ///
+            private async System.Threading.Tasks.Task create_dbAsync(string username)
+            {
+                SqlCommand myCommand = new SqlCommand();
+                // SqlDataReader myReader = null;
                 try
                 {
-                    SqlCommand mycommand = new SqlCommand();
                     myCommand.Connection = CommonData.MyCon.MyCon;
                     myCommand.CommandType = CommandType.Text;
-                    myCommand.CommandText = "INSERT INTO " + CommonData.Mytablename + "(id)" + " VALUES (@id)";
-                   // myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id," + CommonData.theColummsRaw + ")" + " VALUES (@id," + CommonData.theColummsVal + ")";
+                    myCommand.CommandText = "CREATE DATABASE " + username; //GET TABLES IN DATABASE
                     CommonData.MyCon.openConnection();
-                    for (int i = 0; i < (16 * 5) * numentries; i++)
-                    {
-                        myCommand.Parameters.Clear();
-                        //Debug.WriteLine("INSERT INTO" + i);
-                        //myCommand.Parameters.AddWithValue("parentId", 1);
-                        myCommand.Parameters.Add("@id", SqlDbType.Int).Value = i;
-                       // myCommand.Parameters.AddWithValue("id", i);
-                    
-                
-                    //myReader = myCommand.ExecuteReader();
                     myCommand.ExecuteNonQuery();
-                      
-                    }
-                    CommonData.MyCon.closeConnection();
                 }
                 catch (Exception ex)
                 {
-                     //MessageBox.Show(ex.Message);
-                     // MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
-                     //await dialog.ShowAsync();
-                    Debug.WriteLine("FAIL!!", "Information " + ex.Message);
+                    // MessageBox.Show(ex.Message);
+                    MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
+                    await dialog.ShowAsync();
                 }
                 finally
                 {
                     if (CommonData.MyCon.MyCon != null)
                         CommonData.MyCon.closeConnection();
                 }
-             }
+            } 
+        
+        public List<string> GetDatabaseList()
+        {
+            List<string> list = new List<string>();
 
-           }
-            //
+            SqlCommand myCommand = new SqlCommand();
+            SqlDataReader myReader = null;
+
+            bool tableexisted = false;
+            myCommand.Connection = CommonData.MyCon.MyCon;
+            myCommand.CommandType = CommandType.Text;
+            myCommand.CommandText = "SELECT name from sys.databases"; //GET TABLES IN DATABASE
+            CommonData.MyCon.openConnection();
+            {
+                using (IDataReader dr = myCommand.ExecuteReader())
+                {
+                    while (dr.Read())
+                    {
+                        list.Add(dr[0].ToString());
+                    }
+                }
+            }
+            if (CommonData.MyCon.MyCon != null)
+                CommonData.MyCon.closeConnection();
+            return list;
         }
-
     }
+
 }
 
 
 
 
-            ///
+///

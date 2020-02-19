@@ -14,9 +14,9 @@ namespace CSharp1
         //Der Connection String enthält alle wichtigen Infos für die Verbindung
         private string datasource = "EDVSR19-05\\AGSQLSERVER";
         private string integratedSecurity = "SSPI";
-        private string database="TestDB";
+        private string database="DefaultSeqDb";
         private string applicationIntent= "ReadWrite"; 
-        private string connectionString = "Connection Timeout=15; Data Source=EDVSR19-05\\AGSQLSERVER; Integrated Security= SSPI; Database= TestDB; ApplicationIntent= ReadWrite";
+        private string connectionString = "Connection Timeout=15; Data Source=EDVSR19-05\\AGSQLSERVER; Integrated Security= SSPI; Database= DefaultSeqDb; ApplicationIntent= ReadWrite";
 
         //Connection zum Verbindungen (hat die Methode "Open")
         private SqlConnection myCon;
@@ -35,8 +35,8 @@ namespace CSharp1
         {
            // Datasource = "EDVSR19-05\\AGSQLSERVER";
            // IntegratedSecurity = "SSPI";
-           // Database = "TestDB";
-            ConnectionString = "Connection Timeout=15; Data Source="+Datasource+"; Integrated Security= "+IntegratedSecurity+"; Database= "+Database+"; ApplicationIntent= "+ ApplicationIntent + "";
+           // Database = "DefaultSeqDb";
+            ConnectionString = "Connection Timeout=15; Data Source="+Datasource+"; Integrated Security= "+IntegratedSecurity+"; Database= "+CommonData.Database+"; ApplicationIntent= "+ ApplicationIntent + "";
         }
 
         public void establishConnection()

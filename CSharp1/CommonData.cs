@@ -19,7 +19,7 @@ namespace CSharp1
        public static String theColummsUpd = "";
        public static String theColummsUpdSingle = "";
        public static String theColummsSingleRaw = "";
-       private static String mytablename = "test16";
+       private static String mytablename = "";
        public static int numchannels = 10;
 
         public static DBConnection MyCon;

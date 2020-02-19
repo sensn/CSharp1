@@ -92,11 +92,11 @@ namespace CSharp1.Views
             try
             {
                 //Commandtype --> Stored Procedure + Name der Prozedur angeben
-                //  myCommand.CommandText = "SELECT * FROM [TestDB].[dbo].[USERData]";
+                //  myCommand.CommandText = "SELECT * FROM [DefaultSeqDb].[dbo].[USERData]";
                 // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
                 myCommand.Connection = CommonData.MyCon.MyCon;
                 myCommand.CommandType = CommandType.Text;
-                myCommand.CommandText = " SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = 'TestDB'"; //GET TABLES IN DATABASE
+                myCommand.CommandText = " SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = '" + CommonData.Database + "'"; //GET TABLES IN DATABASE
                 CommonData.MyCon.openConnection();
                 myReader = myCommand.ExecuteReader();
                 if (CommonData.thesongs.Count() > 0) CommonData.thesongs.Clear();    //Clear the songs list to fill it again

@@ -23,19 +23,19 @@
 
                 Header="Menu">
             <NavigationView.MenuItems>
-                <NavigationViewItem Icon="Home" Tag="Home_Page">
+                <NavigationViewItem Icon="MusicInfo" Tag="Home_Page">
                     <TextBlock Tag="Nav_Home">Home</TextBlock>
                 </NavigationViewItem>
-                <NavigationViewItem Icon="Shop" Tag="Shop_Page">
+                <NavigationViewItem Icon="Permissions" Tag="Shop_Page">
                     <TextBlock Tag="Nav_Shop">Shop</TextBlock>
                 </NavigationViewItem>
-                <NavigationViewItem Tag="Cart_Page">
-                    <NavigationViewItem.Icon>
+                <NavigationViewItem Icon="Delete" Tag="Cart_Page">
+                    <!--<NavigationViewItem.Icon>
                         <FontIcon Glyph=""/>
-                    </NavigationViewItem.Icon>
+                    </NavigationViewItem.Icon>-->
                     <TextBlock Tag="Nav_ShopCart">Shopping Cart</TextBlock>
                 </NavigationViewItem>
-                <NavigationViewItem Icon="Message" Tag="Message_Page">
+                <NavigationViewItem Icon="Accept" Tag="Message_Page">
                     <TextBlock Tag="Nav_Message">Message</TextBlock>
                 </NavigationViewItem>
                 <NavigationViewItem Icon="Print" Tag="Print_Page">

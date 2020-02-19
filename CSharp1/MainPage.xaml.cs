@@ -144,9 +144,9 @@ namespace CSharp1
                         contentFrame.Navigate(typeof(LoadFromDBPage));
                         break;
 
-                    //case "Nav_Message":
-                    //    contentFrame.Navigate(typeof(MessagePage));
-                    //    break;
+                    case "Nav_Message":
+                        contentFrame.Navigate(typeof(CreateAccountPage));
+                        break;
 
                     //case "Nav_Print":
                     //    contentFrame.Navigate(typeof(PrintPage));

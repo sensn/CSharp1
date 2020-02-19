@@ -1,0 +1,50 @@
+﻿<Page
+    x:Class="CSharp1.Views.CreateAccountPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:CSharp1.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+   
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="4*"/>
+                <RowDefinition Height="1*"/>
+
+            </Grid.RowDefinitions>
+            <!--<TextBlock>Shop</TextBlock>-->
+
+            <!--<CommandBar Grid.ColumnSpan="2"  ClosedDisplayMode="Minimal" Background="#1FA2E1">
+            <CommandBar.PrimaryCommands>
+                <AppBarButton Name="home" Icon="Home" Label="Home" Click="AppHome_Click"/>
+                <AppBarSeparator/>
+                <AppBarButton Name="admin" Icon="Admin" Label="Admin" Click="AppAdmin_Click"/>
+                <AppBarSeparator/>
+                <AppBarButton Name="contact" Icon="Contact" Label="Contact" Click="AppContact_Click"/>
+                <AppBarSeparator/>
+            </CommandBar.PrimaryCommands>
+            <CommandBar.SecondaryCommands>
+                <AppBarButton Name="setting" Icon="Setting" Label="Setting"/>
+            </CommandBar.SecondaryCommands>
+        </CommandBar>-->
+            <controls:UniformGrid x:Name="UniformGrid_Login"  Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1"  Orientation="Horizontal"  Columns="2" Rows="4"  ColumnSpacing="4" RowSpacing="4">
+                <TextBox  x:Name="txtbox_username"  Grid.Row="0" Grid.Column="0"  Header="Username:"  PlaceholderText="Username"/>
+                <PasswordBox x:Name="pwdbox_username"  Grid.Row="1" Grid.Column="0"  Header="Password:"  PlaceholderText="Password"/>
+                <Button x:Name="btn_username" Content="Create Account"  Grid.Row="2" Grid.Column="0"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="btn_username_Click" />
+                <!--<HyperlinkButton Content="Create new account" HorizontalAlignment="Right" VerticalAlignment="Top"
+                             Grid.Row="3" Grid.Column="0"
+                 Click="CreateAccountLinkButton_Click"
+                />-->
+            </controls:UniformGrid>
+        </Grid>
+    </Page>
+
