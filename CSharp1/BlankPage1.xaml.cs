@@ -96,10 +96,11 @@ namespace CSharp1
             CommonData.Datasource = "EDVSR19-05\\AGSQLSERVER";
             CommonData.Database = "master";
             CommonData.SetConnection();   //CONNECT TO MS SQL SERVER
+            //CommonData.SetConnection();   //CONNECT TO MS SQL SERVER
             theDBlist = GetDatabaseList();
             foreach (var db in theDBlist)
             {
-               // Debug.WriteLine(db);
+                Debug.WriteLine(db);
                 if ("myDBSeqAccounts" == db) AccDbExisted = true;
                 if ("DefaultSeqDb" == db) DefaultDbExisted = true;
             }

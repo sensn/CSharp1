@@ -103,14 +103,14 @@ namespace CSharp1.Views
                 {
                     CommonData.Database = username;
                     CommonData.MyCon.setConnectionString();
-                    CommonData.MyCon.establishConnection();
+                    CommonData.MyCon.establishConnectionAsync();
                 }
                 if (!dbexisted)
                 {
                     create_dbAsync(username);
                     CommonData.Database = username;
                     CommonData.MyCon.setConnectionString();
-                    CommonData.MyCon.establishConnection();
+                    CommonData.MyCon.establishConnectionAsync();
                 }
                 //
          }
@@ -118,7 +118,7 @@ namespace CSharp1.Views
             {
                 CommonData.Database = "myDBSeqAccounts";
                 CommonData.MyCon.setConnectionString();
-                CommonData.MyCon.establishConnection();
+                CommonData.MyCon.establishConnectionAsync();
             }
         }
         private async void CreateAccountLinkButton_Click(object sender, RoutedEventArgs e)

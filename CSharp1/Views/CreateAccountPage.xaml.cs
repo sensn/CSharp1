@@ -108,7 +108,7 @@ namespace CSharp1.Views
                     create_dbAsync(username);
                     CommonData.Database = username;
                     CommonData.MyCon.setConnectionString();
-                    CommonData.MyCon.establishConnection();
+                    CommonData.MyCon.establishConnectionAsync();
                     MessageDialog dialog = new MessageDialog("Please Login!", "User Account created! Hello " + username + "!");
                     await dialog.ShowAsync();
                     Frame navigationFrame = this.Frame as Frame;

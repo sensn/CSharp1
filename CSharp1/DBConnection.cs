@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI.Popups;
 
 namespace CSharp1
 {
@@ -36,15 +37,31 @@ namespace CSharp1
            // Datasource = "EDVSR19-05\\AGSQLSERVER";
            // IntegratedSecurity = "SSPI";
            // Database = "DefaultSeqDb";
-            ConnectionString = "Connection Timeout=15; Data Source="+ CommonData.Datasource +"; Integrated Security= "+IntegratedSecurity+"; Database= "+CommonData.Database+"; ApplicationIntent= "+ ApplicationIntent + "";
+           // ConnectionString = "Connection Timeout=5; Data Source="+ CommonData.Datasource +"; Integrated Security= "+IntegratedSecurity+"; Database= "+CommonData.Database+"; ApplicationIntent= "+ ApplicationIntent + "";
+            ConnectionString = "Connection Timeout=5; Data Source="+ CommonData.Datasource + "; Integrated Security= " + IntegratedSecurity + "; Database= " + CommonData.Database+"; ApplicationIntent= "+ ApplicationIntent + "";
         }
 
-        public void establishConnection()
+        public async Task establishConnectionAsync()
         {
-            myCon = new SqlConnection(ConnectionString);
-            //Console.WriteLine(Conn1);
-            // myCon.Open();
+            if (myCon != null)
+            {
+                myCon.Close();
+            }
+            try
+            {
+                myCon = new SqlConnection(ConnectionString);
+             }
+           
+              catch (Exception ex)
+            {
+                // MessageBox.Show(ex.Message);
+                MessageDialog dialog = new MessageDialog("DBCONNECTION FAIL!!", "Information " + ex.Message);
+                await dialog.ShowAsync();
+            }
         }
+                //Console.WriteLine(Conn1);
+            // myCon.Open();
+        
         public void openConnection()
         {
             MyCon.Open();

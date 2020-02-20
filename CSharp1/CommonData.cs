@@ -36,7 +36,7 @@ namespace CSharp1
         {
             MyCon = new DBConnection();
             MyCon.setConnectionString();
-            MyCon.establishConnection();
+            MyCon.establishConnectionAsync();
         }
 
         public static void create_SQL_Strings()

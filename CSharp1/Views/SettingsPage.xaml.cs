@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -37,10 +40,25 @@ namespace CSharp1.Views
         {
             if (txtbox_servername.Text != "")
             {
-                CommonData.Datasource = txtbox_servername.Text;
 
+                CommonData.MyCon.MyCon.Close();
+                CommonData.MyCon.closeConnection();
+                Debug.WriteLine("SQL STATE: "+ CommonData.MyCon.MyCon.State);
+                CommonData.Datasource = txtbox_servername.Text;
+                Debug.Write("SERVERNAME: " + CommonData.Datasource);
+               
                 CommonData.Database = "master";
-                CommonData.SetConnection();   //CONNECT TO MS SQL SERVER
+                try
+                {
+                    CommonData.SetConnection();   //CONNECT TO MS SQL SERVER
+                }
+                catch(Exception ex)
+                {
+                    MessageDialog dialog = new MessageDialog("SETTINGS FAIL1!!", "Information " + ex.Message);
+                    await dialog.ShowAsync();
+                }
+
+                //CONNECT TO MS SQL SERVER
                 theDBlist = GetDatabaseList();
                 foreach (var db in theDBlist)
                 {
@@ -127,7 +145,7 @@ namespace CSharp1.Views
                 catch (Exception ex)
                 {
                     // MessageBox.Show(ex.Message);
-                    MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
+                    MessageDialog dialog = new MessageDialog("FAIL Table!!", "Information " + ex.Message);
                     await dialog.ShowAsync();
                 }
                 finally
@@ -138,6 +156,58 @@ namespace CSharp1.Views
             }
         }
 
+        private async System.Threading.Tasks.Task create_dbAsync(string username)
+        {
+            SqlCommand myCommand = new SqlCommand();
+            // SqlDataReader myReader = null;
+            try
+            {
+                myCommand.Connection = CommonData.MyCon.MyCon;
+                myCommand.CommandType = CommandType.Text;
+                myCommand.CommandText = "CREATE DATABASE " + username; //GET TABLES IN DATABASE
+                CommonData.MyCon.openConnection();
+                myCommand.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                // MessageBox.Show(ex.Message);
+                MessageDialog dialog = new MessageDialog("FAIL create Db!!", "Information " + ex.Message);
+                await dialog.ShowAsync();
+            }
+            finally
+            {
+                if (CommonData.MyCon.MyCon != null)
+                    CommonData.MyCon.closeConnection();
+            }
+        }
+        public List<string> GetDatabaseList()
+        {
+            List<string> list = new List<string>();
+
+            SqlCommand myCommand = new SqlCommand();
+            SqlDataReader myReader = null;
+
+            bool tableexisted = false;
+            myCommand.Connection = CommonData.MyCon.MyCon;
+            myCommand.CommandType = CommandType.Text;
+            myCommand.CommandText = "SELECT name from sys.databases"; //GET TABLES IN DATABASE
+            CommonData.MyCon.openConnection();
+            {
+                using (IDataReader dr = myCommand.ExecuteReader())
+                {
+                    while (dr.Read())
+                    {
+                        list.Add(dr[0].ToString());
+                    }
+                }
+            }
+            if (CommonData.MyCon.MyCon != null)
+            {
+                CommonData.MyCon.closeConnection();
+            }
+            CommonData.MyCon.closeConnection();
+            return list;
+        }
 
     }
 } 
