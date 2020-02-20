@@ -153,6 +153,10 @@ namespace CSharp1
                     //    break;
                 }
             }
+            if (args.IsSettingsInvoked)
+            {
+                contentFrame.Navigate(typeof(CreateAccountPage));
+            }
         }
         #endregion
         public void SetSelectedNavigationItem(int index)

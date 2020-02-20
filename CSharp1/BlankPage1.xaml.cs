@@ -86,13 +86,14 @@ namespace CSharp1
 
         bool AccDbExisted = false;
         bool DefaultDbExisted = false;
+        TextBox enter_songname;
         public BlankPage1()
         {
             InitializeComponent();
             // Add the following line of code.
             this.NavigationCacheMode = Windows.UI.Xaml.Navigation.NavigationCacheMode.Enabled;
 
-
+            CommonData.Datasource = "EDVSR19-05\\AGSQLSERVER";
             CommonData.Database = "master";
             CommonData.SetConnection();   //CONNECT TO MS SQL SERVER
             theDBlist = GetDatabaseList();
@@ -378,19 +379,28 @@ namespace CSharp1
 
             //loadFromDBButton.Flyout  = "{StaticResource TravelFlyout}";
             myflyout1 = new Flyout();
-            TextBox enter_songname = new TextBox();
+            enter_songname = new TextBox();
+           
+            Button btn_confirm_songname = new Button();
+            btn_confirm_songname.Content = "Save Song";
+            btn_confirm_songname.Click += btn_confirm_songname_Click;
             enter_songname.KeyDown += Enter_songname_KeyDown;
             Grid mygrid = new Grid();
             RowDefinition rd1 = new RowDefinition();
             RowDefinition rd2 = new RowDefinition();
+            RowDefinition rd3 = new RowDefinition();
             rd1.Height= new GridLength(1,GridUnitType.Star);
+            rd2.Height= new GridLength(1,GridUnitType.Star);
             rd2.Height= new GridLength(2,GridUnitType.Star);
             mygrid.RowDefinitions.Add(rd1);
             mygrid.RowDefinitions.Add(rd2);
+            mygrid.RowDefinitions.Add(rd3);
             mygrid.Children.Add(enter_songname);
+            mygrid.Children.Add(btn_confirm_songname);
             mygrid.Children.Add(songListView1);
             Grid.SetRow(enter_songname, 0);
-            Grid.SetRow(songListView1, 1);
+            Grid.SetRow(btn_confirm_songname, 1);
+            Grid.SetRow(songListView1, 2);
             myflyout1.Content = mygrid;
             saveTODBButton.Flyout = myflyout1;
 
@@ -403,6 +413,18 @@ namespace CSharp1
             //  checkit();
           //  fill_table();
         }  // public MAINPAGE
+
+        private void btn_confirm_songname_Click(object sender, RoutedEventArgs e)
+        {
+            if (enter_songname.Text != "")
+            {
+                CommonData.Mytablename = enter_songname.Text;
+                Debug.WriteLine("TABLENAME S: " + CommonData.Mytablename);
+                myflyout1.Hide();
+                create_table();
+                fill_table();
+            }
+        }
 
         private async Task create_dbTableAsync()
         {
@@ -477,12 +499,15 @@ namespace CSharp1
             {
                 if (e.Key == Windows.System.VirtualKey.Enter)
                 {
+                if (enter_songname.Text != "")
+                {
                     TextBox tbox = sender as TextBox;
                     CommonData.Mytablename = tbox.Text;
                     Debug.WriteLine("TABLENAME S: " + CommonData.Mytablename);
                     myflyout1.Hide();
                     create_table();
                     fill_table();
+                }
                 }
 
 

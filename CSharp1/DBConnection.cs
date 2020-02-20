@@ -36,7 +36,7 @@ namespace CSharp1
            // Datasource = "EDVSR19-05\\AGSQLSERVER";
            // IntegratedSecurity = "SSPI";
            // Database = "DefaultSeqDb";
-            ConnectionString = "Connection Timeout=15; Data Source="+Datasource+"; Integrated Security= "+IntegratedSecurity+"; Database= "+CommonData.Database+"; ApplicationIntent= "+ ApplicationIntent + "";
+            ConnectionString = "Connection Timeout=15; Data Source="+ CommonData.Datasource +"; Integrated Security= "+IntegratedSecurity+"; Database= "+CommonData.Database+"; ApplicationIntent= "+ ApplicationIntent + "";
         }
 
         public void establishConnection()

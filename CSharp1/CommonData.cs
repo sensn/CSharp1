@@ -26,6 +26,7 @@ namespace CSharp1
 
         public static string Mytablename { get => mytablename; set => mytablename = value; }
         public static string Database { get; internal set; }
+        public static string Datasource { get; internal set; }
 
         public static void setTheSongs(String thesong)
         {

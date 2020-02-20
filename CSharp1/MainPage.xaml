@@ -20,7 +20,7 @@
                       
                 PaneDisplayMode="Auto"
                 IsBackButtonVisible="Collapsed"
-
+                IsSettingsVisible="True"
                 Header="Menu">
             <NavigationView.MenuItems>
                 <NavigationViewItem Icon="MusicInfo" Tag="Home_Page">
