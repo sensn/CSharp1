@@ -45,7 +45,7 @@ namespace CSharp1.Views
                 CommonData.MyCon.closeConnection();
                 Debug.WriteLine("SQL STATE: "+ CommonData.MyCon.MyCon.State);
                 CommonData.Datasource = txtbox_servername.Text;
-                Debug.Write("SERVERNAME: " + CommonData.Datasource);
+               
                
                 CommonData.Database = "master";
                 try
@@ -60,12 +60,12 @@ namespace CSharp1.Views
 
                 //CONNECT TO MS SQL SERVER
                 theDBlist = GetDatabaseList();
-                foreach (var db in theDBlist)
-                {
-                    // Debug.WriteLine(db);
-                    if ("myDBSeqAccounts" == db) AccDbExisted = true;
-                    if ("DefaultSeqDb" == db) DefaultDbExisted = true;
-                }
+                //foreach (var db in theDBlist)
+                //{
+                //    // Debug.WriteLine(db);
+                //    if ("myDBSeqAccounts" == db) AccDbExisted = true;
+                //    if ("DefaultSeqDb" == db) DefaultDbExisted = true;
+                //}
                 if (!AccDbExisted)
                 {
                     create_dbAsync("myDBSeqAccounts");

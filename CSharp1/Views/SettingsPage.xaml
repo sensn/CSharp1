@@ -35,7 +35,7 @@
             </CommandBar.SecondaryCommands>
         </CommandBar>-->
         <controls:UniformGrid x:Name="UniformGrid_Login"  Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="1"  Orientation="Horizontal"  Columns="2" Rows="4"  ColumnSpacing="4" RowSpacing="4">
-            <TextBox  x:Name="txtbox_servername"  Grid.Row="0" Grid.Column="0"  Header="Servername"  PlaceholderText="EDVSR19-05\\AGSQLSERVER"/>
+            <TextBox  x:Name="txtbox_servername"  Grid.Row="0" Grid.Column="0"  Header="Servername"  PlaceholderText="EDVSR19-05\AGSQLSERVER"/>
             <PasswordBox x:Name="pwdbox_serverpassw"  Grid.Row="1" Grid.Column="0"  Header="Password:"  PlaceholderText="Password"/>
             <Button x:Name="btn_username" Content="Connect to Server"  Grid.Row="2" Grid.Column="0"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="btn_connectToSQLServer_Click" />
             <!--<HyperlinkButton Content="Create new account" HorizontalAlignment="Right" VerticalAlignment="Top"

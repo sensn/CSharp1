@@ -29,7 +29,7 @@ using System.Threading.Tasks;
 using Windows.UI.Popups;
 using System.Data;
 using System.Data.SqlClient;
-
+using System.Data.SQLite;
 
 
 // Die Elementvorlage "Leere Seite" wird unter https://go.microsoft.com/fwlink/?LinkId=234238 dokumentiert.
@@ -92,7 +92,8 @@ namespace CSharp1
             InitializeComponent();
             // Add the following line of code.
             this.NavigationCacheMode = Windows.UI.Xaml.Navigation.NavigationCacheMode.Enabled;
-
+            bool connect = 1 == 0;
+            if (connect) { 
             CommonData.Datasource = "EDVSR19-05\\AGSQLSERVER";
             CommonData.Database = "master";
             CommonData.SetConnection();   //CONNECT TO MS SQL SERVER
@@ -121,9 +122,9 @@ namespace CSharp1
                 CommonData.Database = "DefaultSeqDb";
                
             }
-           
 
-                Debug.WriteLine("Servas Wöd, I brauch a göd! CREATE TASK");
+            }
+            Debug.WriteLine("Servas Wöd, I brauch a göd! CREATE TASK");
             CommonData.Database = "DefaultSeqDb";   //Default Database
             CommonData.SetConnection();   //CONNECT TO MS SQL SERVER
             

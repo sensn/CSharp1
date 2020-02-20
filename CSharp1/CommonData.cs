@@ -12,6 +12,7 @@ namespace CSharp1
         public static List<String> thesongs=  new List<String>(2);
 
         public static int BPM;
+        public static bool SQLite = true;
 
        public static String theColumms = "";
        public static String theColummsRaw = "";

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Data.SQLite;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,18 +23,37 @@ namespace CSharp1
 
         //Connection zum Verbindungen (hat die Methode "Open")
         private SqlConnection myCon;
+        private SQLiteConnection myConLite;
 
         public string Conn { get => conn; set => conn = value; }
         public string Conn1 { get => conn; set => conn = value; }
+        
         public SqlConnection MyCon { get => myCon; set => myCon = value; }
+        public SQLiteConnection MyConLite { get => myConLite; set => myConLite = value; }
+
         public string ConnectionString { get => connectionString; set => connectionString = value; }
         public string ApplicationIntent { get => applicationIntent; set => applicationIntent = value; }
         public string Database { get => database; set => database = value; }
         public string IntegratedSecurity { get => integratedSecurity; set => integratedSecurity = value; }
         public string Datasource { get => datasource; set => datasource = value; }
+       
 
+        private const string DatabaseFile = "databaseFile.db";
+        private const string DatabaseSource = "data source=" + DatabaseFile;
 
-        public void setConnectionString()
+        private static void Initialize()
+
+        {
+
+            // SQLLITE
+            // Recreate database if already exists
+            if (File.Exists(DatabaseFile))
+            {
+                File.Delete(DatabaseFile);
+                SQLiteConnection.CreateFile(DatabaseFile);
+            }
+        }
+            public void setConnectionString()
         {
            // Datasource = "EDVSR19-05\\AGSQLSERVER";
            // IntegratedSecurity = "SSPI";
@@ -43,20 +64,28 @@ namespace CSharp1
 
         public async Task establishConnectionAsync()
         {
-            if (myCon != null)
+            if (CommonData.SQLite)
             {
-                myCon.Close();
+
             }
-            try
+            else
             {
-                myCon = new SqlConnection(ConnectionString);
-             }
-           
-              catch (Exception ex)
-            {
-                // MessageBox.Show(ex.Message);
-                MessageDialog dialog = new MessageDialog("DBCONNECTION FAIL!!", "Information " + ex.Message);
-                await dialog.ShowAsync();
+
+                if (myCon != null)
+                {
+                    myCon.Close();
+                }
+                try
+                {
+                    myCon = new SqlConnection(ConnectionString);
+                }
+
+                catch (Exception ex)
+                {
+                    // MessageBox.Show(ex.Message);
+                    MessageDialog dialog = new MessageDialog("DBCONNECTION FAIL!!", "Information " + ex.Message);
+                    await dialog.ShowAsync();
+                }
             }
         }
                 //Console.WriteLine(Conn1);
