@@ -66,7 +66,7 @@ namespace CSharp1.Views
             myCommand.Connection = CommonData.MyCon.MyCon;
             myCommand.CommandType = CommandType.Text;
             myCommand.CommandText = "DROP TABLE " + thetablename +"";  //DROP TABLE
-            CommonData.MyCon.openConnection();
+            CommonData.MyCon.openConnectionAsync();
             myReader = myCommand.ExecuteReader();
         }
         catch (Exception ex)
@@ -97,7 +97,7 @@ namespace CSharp1.Views
                 myCommand.Connection = CommonData.MyCon.MyCon;
                 myCommand.CommandType = CommandType.Text;
                 myCommand.CommandText = " SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = '" + CommonData.Database + "'"; //GET TABLES IN DATABASE
-                CommonData.MyCon.openConnection();
+                CommonData.MyCon.openConnectionAsync();
                 myReader = myCommand.ExecuteReader();
                 if (CommonData.thesongs.Count() > 0) CommonData.thesongs.Clear();    //Clear the songs list to fill it again
                 while (myReader.Read())

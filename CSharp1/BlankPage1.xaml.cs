@@ -30,6 +30,7 @@ using Windows.UI.Popups;
 using System.Data;
 using System.Data.SqlClient;
 using System.Data.SQLite;
+using System.Data.Common;
 
 
 // Die Elementvorlage "Leere Seite" wird unter https://go.microsoft.com/fwlink/?LinkId=234238 dokumentiert.
@@ -53,6 +54,11 @@ namespace CSharp1
         public UniformGrid my1 = new UniformGrid();
 
         public Room[] room = new Room[10];
+
+        private static IDbCommand myCommand = null;
+        public static IDbCommand MyCommand { get => myCommand; set => myCommand = value; }
+       // public static IDbCommand MyKommand { get; internal set; }
+
         public ToggleButton[] channelSel = new ToggleButton[10];
         public ToggleButton[] saveSlot = new ToggleButton[10];
         public ToggleButton[] loadSlot = new ToggleButton[10];
@@ -92,7 +98,7 @@ namespace CSharp1
             InitializeComponent();
             // Add the following line of code.
             this.NavigationCacheMode = Windows.UI.Xaml.Navigation.NavigationCacheMode.Enabled;
-            bool connect = 1 == 0;
+            bool connect = 1 == 1;
             if (connect) { 
             CommonData.Datasource = "EDVSR19-05\\AGSQLSERVER";
             CommonData.Database = "master";
@@ -430,8 +436,10 @@ namespace CSharp1
 
         private async Task create_dbTableAsync()
         {
-            SqlCommand myCommand = new SqlCommand();
-            SqlDataReader myReader = null;
+            //SqlCommand myCommand = new SqlCommand();      
+           // IDbCommand myCommand = new SqlCommand();
+            IDataReader myReader = null;
+            //SqlDataReader myReader = null;
 
             bool tableexisted = false;
             try
@@ -444,7 +452,7 @@ namespace CSharp1
                 myCommand.Connection = CommonData.MyCon.MyCon;
                 myCommand.CommandType = CommandType.Text;
                 myCommand.CommandText = " SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = '" + CommonData.Database + "'"; //GET TABLES IN DATABASE
-                CommonData.MyCon.openConnection();
+                CommonData.MyCon.openConnectionAsync();
                 myReader = myCommand.ExecuteReader();
                 // if (CommonData.thesongs.Count() > 0) CommonData.thesongs.Clear();    //Clear the songs list to fill it again
                 while (myReader.Read())
@@ -476,7 +484,7 @@ namespace CSharp1
                     myCommand.CommandType = CommandType.Text;
                     myCommand.CommandText = "CREATE TABLE " + "USERAccounts" + " (id INTEGER , Username varchar(50),Passw VARCHAR(50))"; //GET TABLES IN DATABASE
                     //myCommand.CommandText = "CREATE TABLE " + CommonData.Mytablename + " (id INTEGER , " + CommonData.theColumms + ")"; //GET TABLES IN DATABASE
-                    CommonData.MyCon.openConnection();
+                    CommonData.MyCon.openConnectionAsync();
                     myReader = myCommand.ExecuteReader();
                 }
                 catch (Exception ex)
@@ -997,8 +1005,10 @@ namespace CSharp1
             /////SQLLLL
             public async Task get_tables()
             {
-                SqlCommand myCommand = new SqlCommand();
-                SqlDataReader myReader = null;
+               // SqlCommand myCommand = new SqlCommand();
+              //  IDbCommand myCommand = new SqlCommand();
+                IDataReader myReader = null;
+               // SqlDataReader myReader = null;
 
                 bool tableexisted = false;
                 try
@@ -1011,7 +1021,7 @@ namespace CSharp1
                     myCommand.Connection = CommonData.MyCon.MyCon;
                     myCommand.CommandType = CommandType.Text;
                     myCommand.CommandText = " SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = '" + CommonData.Database + "'"; //GET TABLES IN DATABASE
-                    CommonData.MyCon.openConnection();
+                    CommonData.MyCon.openConnectionAsync();
                     myReader = myCommand.ExecuteReader();
                     if (CommonData.thesongs.Count() > 0) CommonData.thesongs.Clear();    //Clear the songs list to fill it again
                     while (myReader.Read())
@@ -1038,31 +1048,39 @@ namespace CSharp1
 
             }
             async public Task fill_table() {
-                SqlCommand myCommand = new SqlCommand();
-                SqlDataReader myReader = null;
-                {
+              //  SqlCommand myCommand = new SqlCommand();
+               // SqlDataReader myReader = null;
+          //  DbCommand myCommand = new SqlCommand();
+            IDataReader myReader = null;
+            {
                     try
                     {
                         CommonData.SetConnection();
                         Debug.WriteLine("DATABASE C: " + CommonData.Database);
-                        SqlCommand mycommand = new SqlCommand();
+                      //  SqlCommand mycommand = new SqlCommand();
                         myCommand.Connection = CommonData.MyCon.MyCon;
                         myCommand.CommandType = CommandType.Text;
                         myCommand.CommandText = "UPDATE " + CommonData.Mytablename + " SET " + CommonData.theColummsUpd + "WHERE id=@id";
                         Debug.WriteLine("Command TEXT: " + myCommand.CommandText);
                         //myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id)" + " VALUES (@id)";
                         // myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id," + CommonData.theColummsRaw + ")" + " VALUES (@id," + CommonData.theColummsVal + ")";
-                        CommonData.MyCon.openConnection();
+                        CommonData.MyCon.openConnectionAsync();
                         for (int i = 0; i < (16 * 5) * numentries; i++)
                         {
                             myCommand.Parameters.Clear();
                             for (int x = 0; x < numchannels; x++)
                             {
-                                String thestring = "@Channel" + x;
-                                //query.bindValue(thestring, room[x]->thepattern.vec_bs[i]);
-                                myCommand.Parameters.Add(thestring, SqlDbType.TinyInt).Value = room[x].thepattern.vec_bs[i];
+                           
+                            String thestring = "@Channel" + x;
+                            var parameter = myCommand.CreateParameter();
+                            parameter.ParameterName = "@SomeName";
+                            //query.bindValue(thestring, room[x]->thepattern.vec_bs[i]);
+
+                            // myCommand.Parameters.Add(thestring, SqlDbType.TinyInt).Value = room[x].thepattern.vec_bs[i];
+                            myCommand.AddParameter(thestring, room[x].thepattern.vec_bs[i]);
                             }
-                            myCommand.Parameters.Add("@id", SqlDbType.Int).Value = i;
+                            //myCommand.Parameters.Add("@id", SqlDbType.Int).Value = i;
+                            myCommand.AddParameter("@id",i);
                             //myReader = myCommand.ExecuteReader();
                             myCommand.ExecuteNonQuery();
                         }
@@ -1086,14 +1104,14 @@ namespace CSharp1
                     {
                         try
                         {
-                            SqlCommand mycommand = new SqlCommand();
+                          // SqlCommand mycommand = new SqlCommand();
                             myCommand.Connection = CommonData.MyCon.MyCon;
                             myCommand.CommandType = CommandType.Text;
                             myCommand.CommandText = "UPDATE " + CommonData.Mytablename + " SET " + CommonData.theColummsUpdSingle + "WHERE id=@id";
                             Debug.WriteLine("Command TEXT: " + myCommand.CommandText);
                             //myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id)" + " VALUES (@id)";
                             // myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id," + CommonData.theColummsRaw + ")" + " VALUES (@id," + CommonData.theColummsVal + ")";
-                            CommonData.MyCon.openConnection();
+                            CommonData.MyCon.openConnectionAsync();
                             for (int x = 0; x < numchannels; x++)
                             {
                                 myCommand.Parameters.Clear();
@@ -1136,10 +1154,13 @@ namespace CSharp1
             public async Task load_table()
             {
                 {
-                    SqlCommand myCommand = new SqlCommand();
-                    SqlDataReader myReader = null;
-                    // bool tableexisted = false;
-                    try
+                   // SqlCommand myCommand = new SqlCommand();
+                   // SqlDataReader myReader = null;
+
+               // IDbCommand myCommand = new SqlCommand();
+                IDataReader myReader = null;
+                // bool tableexisted = false;
+                try
                     {
                         CommonData.SetConnection();
                         Debug.WriteLine("DATABASE L: " + CommonData.Database);
@@ -1149,7 +1170,7 @@ namespace CSharp1
                         myCommand.Connection = CommonData.MyCon.MyCon;
                         myCommand.CommandType = CommandType.Text;
                         myCommand.CommandText = "SELECT* FROM " + CommonData.Mytablename + "";
-                        CommonData.MyCon.openConnection();
+                        CommonData.MyCon.openConnectionAsync();
                         myReader = myCommand.ExecuteReader();
 
                         while (myReader.Read())
@@ -1176,10 +1197,13 @@ namespace CSharp1
                     }
                 }
                 {
-                    SqlCommand myCommand = new SqlCommand();
-                    SqlDataReader myReader = null;
-                    // bool tableexisted = false;
-                    try
+                  //  SqlCommand myCommand = new SqlCommand();
+                  //  SqlDataReader myReader = null;
+              //  IDbCommand myCommand = new SqlCommand();
+                IDataReader myReader = null;
+
+                // bool tableexisted = false;
+                try
                     {
                         //Commandtype --> Stored Procedure + Name der Prozedur angeben
                         //  myCommand.CommandText = "SELECT * FROM [myDBSeqAccounts].[dbo].[USERData]";
@@ -1187,7 +1211,7 @@ namespace CSharp1
                         myCommand.Connection = CommonData.MyCon.MyCon;
                         myCommand.CommandType = CommandType.Text;
                         myCommand.CommandText = "SELECT id, " + CommonData.theColummsSingleRaw + " FROM " + CommonData.Mytablename + " WHERE id=@id";
-                        CommonData.MyCon.openConnection();
+                        CommonData.MyCon.openConnectionAsync();
                         for (int i = 0; i < numchannels; i++)
                         {
                             myCommand.Parameters.Clear();
@@ -1227,10 +1251,13 @@ namespace CSharp1
             }
             public async Task create_table()
             {
-                SqlCommand myCommand = new SqlCommand();
-                SqlDataReader myReader = null;
+               // SqlCommand myCommand = new SqlCommand();
+               // SqlDataReader myReader = null;
 
-                bool tableexisted = false;
+          //  IDbCommand myCommand = new SqlCommand();
+            IDataReader myReader = null;
+
+            bool tableexisted = false;
                 try
                 {
                     CommonData.SetConnection();
@@ -1241,7 +1268,7 @@ namespace CSharp1
                     myCommand.Connection = CommonData.MyCon.MyCon;
                     myCommand.CommandType = CommandType.Text;
                     myCommand.CommandText = " SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = '" + CommonData.Database + "'"; //GET TABLES IN DATABASE
-                    CommonData.MyCon.openConnection();
+                    CommonData.MyCon.openConnectionAsync();
                     myReader = myCommand.ExecuteReader();
                     // if (CommonData.thesongs.Count() > 0) CommonData.thesongs.Clear();    //Clear the songs list to fill it again
                     while (myReader.Read())
@@ -1272,7 +1299,7 @@ namespace CSharp1
                         myCommand.Connection = CommonData.MyCon.MyCon;
                         myCommand.CommandType = CommandType.Text;
                         myCommand.CommandText = "CREATE TABLE " + CommonData.Mytablename + " (id INTEGER , " + CommonData.theColumms + ")"; //GET TABLES IN DATABASE
-                        CommonData.MyCon.openConnection();
+                        CommonData.MyCon.openConnectionAsync();
                         myReader = myCommand.ExecuteReader();
                     }
                     catch (Exception ex)
@@ -1292,12 +1319,14 @@ namespace CSharp1
                     {
                         try
                         {
-                            SqlCommand mycommand = new SqlCommand();
-                            myCommand.Connection = CommonData.MyCon.MyCon;
+                            //SqlCommand mycommand = new SqlCommand();
+                     //   IDbCommand myCommand = new SqlCommand();
+                        IDataReader myReader = null;
+                        myCommand.Connection = CommonData.MyCon.MyCon;
                             myCommand.CommandType = CommandType.Text;
                             myCommand.CommandText = "INSERT INTO " + CommonData.Mytablename + "(id)" + " VALUES (@id)";
                             // myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id," + CommonData.theColummsRaw + ")" + " VALUES (@id," + CommonData.theColummsVal + ")";
-                            CommonData.MyCon.openConnection();
+                            CommonData.MyCon.openConnectionAsync();
                             for (int i = 0; i < (16 * 5) * numentries; i++)
                             {
                                 myCommand.Parameters.Clear();
@@ -1335,14 +1364,14 @@ namespace CSharp1
             ///
             private async System.Threading.Tasks.Task create_dbAsync(string username)
             {
-                SqlCommand myCommand = new SqlCommand();
+              //  SqlCommand myCommand = new SqlCommand();
                 // SqlDataReader myReader = null;
                 try
                 {
                     myCommand.Connection = CommonData.MyCon.MyCon;
                     myCommand.CommandType = CommandType.Text;
                     myCommand.CommandText = "CREATE DATABASE " + username; //GET TABLES IN DATABASE
-                    CommonData.MyCon.openConnection();
+                    CommonData.MyCon.openConnectionAsync();
                     myCommand.ExecuteNonQuery();
                 }
                 catch (Exception ex)
@@ -1362,14 +1391,15 @@ namespace CSharp1
         {
             List<string> list = new List<string>();
 
-            SqlCommand myCommand = new SqlCommand();
-            SqlDataReader myReader = null;
-
+            //SqlCommand myCommand = new SqlCommand();
+           // SqlDataReader myReader = null;
+           // IDbCommand myCommand = new SqlCommand();
+            IDataReader myReader = null;
             bool tableexisted = false;
             myCommand.Connection = CommonData.MyCon.MyCon;
             myCommand.CommandType = CommandType.Text;
             myCommand.CommandText = "SELECT name from sys.databases"; //GET TABLES IN DATABASE
-            CommonData.MyCon.openConnection();
+            CommonData.MyCon.openConnectionAsync();
             {
                 using (IDataReader dr = myCommand.ExecuteReader())
                 {

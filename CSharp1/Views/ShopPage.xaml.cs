@@ -51,7 +51,7 @@ namespace CSharp1.Views
                 //  myCommand.Parameters.Add("@Username", SqlDbType.VarChar).Direction = ParameterDirection.Output;
                 // myCommand.Parameters.Add("@Passw", SqlDbType.VarChar).Direction = ParameterDirection.Output;
                 //Parameter hinzufuegen!!
-                CommonData.MyCon.openConnection();
+                CommonData.MyCon.openConnectionAsync();
                 //ExecuteNonQuery --> fuehrt unsere Prozedur aus
                 // myCommand.ExecuteNonQuery();
                 myReader = myCommand.ExecuteReader();
@@ -138,7 +138,7 @@ namespace CSharp1.Views
                 myCommand.Connection = CommonData.MyCon.MyCon;
                 myCommand.CommandType = CommandType.Text;
                 myCommand.CommandText = "CREATE DATABASE " + username; //GET TABLES IN DATABASE
-                CommonData.MyCon.openConnection();
+                CommonData.MyCon.openConnectionAsync();
                 myCommand.ExecuteNonQuery();
             }
             catch (Exception ex)
@@ -164,7 +164,7 @@ namespace CSharp1.Views
                 myCommand.Connection = CommonData.MyCon.MyCon;
                 myCommand.CommandType = CommandType.Text;
                 myCommand.CommandText = "SELECT name from sys.databases"; //GET TABLES IN DATABASE
-                CommonData.MyCon.openConnection();
+                CommonData.MyCon.openConnectionAsync();
             {
                 using (IDataReader dr = myCommand.ExecuteReader())
                 {

@@ -58,7 +58,7 @@ namespace CSharp1.Views
                 // myCommand.Parameters.Add("@Passw", SqlDbType.VarChar).Direction = ParameterDirection.Output;
                 //Parameter hinzufuegen!!
 
-                CommonData.MyCon.openConnection();
+                CommonData.MyCon.openConnectionAsync();
                 //ExecuteNonQuery --> fuehrt unsere Prozedur aus
                 // myCommand.ExecuteNonQuery();
                 myReader = myCommand.ExecuteReader();
@@ -143,7 +143,7 @@ namespace CSharp1.Views
                 Debug.WriteLine("Command TEXT: " + myCommand.CommandText);
                 //myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id)" + " VALUES (@id)";
                 // myCommand.CommandText = "INSERT INTO " + CommonData.mytablename + "(id," + CommonData.theColummsRaw + ")" + " VALUES (@id," + CommonData.theColummsVal + ")";
-                CommonData.MyCon.openConnection();
+                CommonData.MyCon.openConnectionAsync();
 
                 myCommand.Parameters.Clear();
                 myCommand.Parameters.Add("@Username", SqlDbType.NVarChar).Value = username;
@@ -180,7 +180,7 @@ namespace CSharp1.Views
             myCommand.Connection = CommonData.MyCon.MyCon;
             myCommand.CommandType = CommandType.Text;
             myCommand.CommandText = "SELECT name from sys.databases"; //GET TABLES IN DATABASE
-            CommonData.MyCon.openConnection();
+            CommonData.MyCon.openConnectionAsync();
             //  myReader = myCommand.ExecuteReader();
 
 
