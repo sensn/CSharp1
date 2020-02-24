@@ -19,6 +19,7 @@
             <RowDefinition Height="1*"/>
 
         </Grid.RowDefinitions>
+        
         <!--<TextBlock>Shop</TextBlock>-->
 
         <!--<CommandBar Grid.ColumnSpan="2"  ClosedDisplayMode="Minimal" Background="#1FA2E1">
@@ -38,6 +39,9 @@
             <TextBox  x:Name="txtbox_servername"  Grid.Row="0" Grid.Column="0"  Header="Servername"  PlaceholderText="EDVSR19-05\AGSQLSERVER"/>
             <PasswordBox x:Name="pwdbox_serverpassw"  Grid.Row="1" Grid.Column="0"  Header="Password:"  PlaceholderText="Password"/>
             <Button x:Name="btn_username" Content="Connect to Server"  Grid.Row="2" Grid.Column="0"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="btn_connectToSQLServer_Click" />
+            <ToggleSwitch  x:Name="tgl_dbmode" Header=" Db Connection Type" 
+        OffContent="Local(SQLite)" OnContent="Remote(MS SQL Server)" 
+        Toggled="ToggleSwitch_Toggled" VerticalAlignment="Top" />
             <!--<HyperlinkButton Content="Create new account" HorizontalAlignment="Right" VerticalAlignment="Top"
                              Grid.Row="3" Grid.Column="0"
                  Click="CreateAccountLinkButton_Click"

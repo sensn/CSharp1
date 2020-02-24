@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CSharp1.Views;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -8,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Storage;
 using Windows.UI.Popups;
 
 namespace CSharp1
@@ -65,18 +67,25 @@ namespace CSharp1
        
 
         private const string DatabaseFile = "databaseFile.db";
-        private const string DatabaseSource = "data source=" + DatabaseFile;
-
+        public static  string DBName = ApplicationData.Current.LocalFolder.Path + @"\data.sqlite";
+        private static string DatabaseSource = "data source=" + DBName;
+       
         private static void Initialize()
 
         {
 
             // SQLLITE
             // Recreate database if already exists
-            if (File.Exists(DatabaseFile))
+            if (File.Exists(DBName))
             {
-                File.Delete(DatabaseFile);
-                SQLiteConnection.CreateFile(DatabaseFile);
+              //  File.Delete(DBName);
+               // SQLiteConnection.CreateFile(DBName);
+                Debug.WriteLine("RE: " + DBName);
+            }
+            else
+            {
+                SQLiteConnection.CreateFile(DBName);
+                Debug.WriteLine("CREATE: " + DBName);
             }
         }
             public void setConnectionString()
@@ -90,11 +99,7 @@ namespace CSharp1
 
         public async Task establishConnectionAsync()
         {
-            if (CommonData.SQLite)
-            {
-
-            }
-            else
+           
             {
 
                 if (myCon != null)
@@ -103,15 +108,18 @@ namespace CSharp1
                 }
                 try
                 {
-                   // myCon = new SqlConnection(ConnectionString);
-                    myCon = GetDatabaseConnection(ConnectionType.DBRemote);
+                    // myCon = new SqlConnection(ConnectionString);
+                    
+                    myCon = GetDatabaseConnection((ConnectionType)CommonData.theconnection);
+               //     myCon = GetDatabaseConnection(ConnectionType.DBLocal);
+                   // myCon = GetDatabaseConnection(ConnectionType.DBRemote);
                 }
 
                 catch (Exception ex)
                 {
                     // MessageBox.Show(ex.Message);
-                    MessageDialog dialog = new MessageDialog("DBCONNECTION FAIL!!", "Information " + ex.Message);
-                    await dialog.ShowAsync();
+                //    MessageDialog dialog = new MessageDialog("DBCONNECTION FAIL!!", "Information " + ex.Message);
+                  //  await dialog.ShowAsync();
                 }
             }
         }
@@ -136,6 +144,8 @@ namespace CSharp1
         public void closeConnection()
         {
              MyCon.Close();
+            // MyCon.Dispose();
+
         }
         public IDbConnection GetDatabaseConnection(ConnectionType db)
         {
@@ -144,13 +154,25 @@ namespace CSharp1
                 case ConnectionType.DBLocal:
                     Debug.WriteLine("Local DB");
                     BlankPage1.MyCommand = new SQLiteCommand();
+                    CreateAccountPage.MyCommand = new SQLiteCommand();
+                    SettingsPage.MyCommand = new SQLiteCommand();
+                    LoadFromDBPage.MyCommand   = new SQLiteCommand();
+                    ShopPage.MyCommand  = new SQLiteCommand();
                     MyCommand = new SQLiteCommand();
-                    return new SQLiteConnection(ConnectionString);
+                    Initialize();
+                    //SQLiteConnectionStringBuilder lcb = new SQLiteConnectionStringBuilder();
+                    
+                    return new SQLiteConnection(DatabaseSource + " ;" + "Version = 3; journal mode = OFF; SyncMode = NORMAL");
                     break;
                 case ConnectionType.DBRemote:
                     Debug.WriteLine("REMOTE DB");
-                    BlankPage1.MyCommand= new SqlCommand();
+                    BlankPage1.MyCommand= new SqlCommand();         
+                    CreateAccountPage.MyCommand = new SqlCommand();
+                    SettingsPage.MyCommand = new SqlCommand();
+                    LoadFromDBPage.MyCommand = new SqlCommand();
+                    ShopPage.MyCommand = new SqlCommand();
                     MyCommand = new SqlCommand();
+                    
                     return new SqlConnection(ConnectionString);
                     break;
                 default:

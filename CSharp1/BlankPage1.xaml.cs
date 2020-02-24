@@ -99,35 +99,41 @@ namespace CSharp1
             // Add the following line of code.
             this.NavigationCacheMode = Windows.UI.Xaml.Navigation.NavigationCacheMode.Enabled;
             bool connect = 1 == 1;
-            if (connect) { 
-            CommonData.Datasource = "EDVSR19-05\\AGSQLSERVER";
-            CommonData.Database = "master";
-            CommonData.SetConnection();   //CONNECT TO MS SQL SERVER
-            //CommonData.SetConnection();   //CONNECT TO MS SQL SERVER
-            theDBlist = GetDatabaseList();
-            foreach (var db in theDBlist)
+            if (connect)
             {
-                Debug.WriteLine(db);
-                if ("myDBSeqAccounts" == db) AccDbExisted = true;
-                if ("DefaultSeqDb" == db) DefaultDbExisted = true;
-            }
-            if (!AccDbExisted)
-            {
-                create_dbAsync("myDBSeqAccounts");
-                CommonData.Database = "myDBSeqAccounts";
-                create_dbTableAsync();
-            }
+                CommonData.Datasource = "EDVSR19-05\\AGSQLSERVER";
+                CommonData.Database = "master";
+                CommonData.theconnection = 1;
+                CommonData.SetConnection();   //CONNECT TO MS SQL SERVER
+                                              //CommonData.SetConnection();   //CONNECT TO MS SQL SERVER
+                if (CommonData.theconnection ==1)
+                {
+                    theDBlist = GetDatabaseList();
+                    foreach (var db in theDBlist)
+                    {
+                        Debug.WriteLine(db);
+                        if ("myDBSeqAccounts" == db) AccDbExisted = true;
+                        if ("DefaultSeqDb" == db) DefaultDbExisted = true;
+                    }
+                    if (!AccDbExisted)
+                    {
+                        create_dbAsync("myDBSeqAccounts");
+                        CommonData.Database = "myDBSeqAccounts";
+                        create_dbTableAsync();
+                    }
 
-            if (DefaultDbExisted)
-            {
-                CommonData.Database = "DefaultSeqDb";
-            }
-            else
-            {
-                create_dbAsync("DefaultSeqDb");
-                CommonData.Database = "DefaultSeqDb";
-               
-            }
+                    if (DefaultDbExisted)
+                    {
+                        CommonData.Database = "DefaultSeqDb";
+                    }
+                    else
+                    {
+                        create_dbAsync("DefaultSeqDb");
+                        CommonData.Database = "DefaultSeqDb";
+
+                    }
+
+                }
 
             }
             Debug.WriteLine("Servas Wöd, I brauch a göd! CREATE TASK");
@@ -1020,7 +1026,14 @@ namespace CSharp1
                     // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
                     myCommand.Connection = CommonData.MyCon.MyCon;
                     myCommand.CommandType = CommandType.Text;
+                if (CommonData.theconnection == 1)
+                {
                     myCommand.CommandText = " SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = '" + CommonData.Database + "'"; //GET TABLES IN DATABASE
+                }
+                else
+                {
+                    myCommand.CommandText = "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%';"; //GET TABLES IN  SQLITE DATABASE
+                }
                     CommonData.MyCon.openConnectionAsync();
                     myReader = myCommand.ExecuteReader();
                     if (CommonData.thesongs.Count() > 0) CommonData.thesongs.Clear();    //Clear the songs list to fill it again
@@ -1031,23 +1044,26 @@ namespace CSharp1
                         CommonData.setTheSongs(myReader[0].ToString());
                         if (CommonData.Mytablename == myReader[0].ToString()) { tableexisted = true; }
                     }
-                    Console.WriteLine("HOHO" + myReader[0].ToString());
+                    //Console.WriteLine("HOHO" + myReader[0].ToString());
                     //Console.WriteLine(myReader[0].ToString() + "" + myReader[1].ToString());                       
                 }
                 catch (Exception ex)
                 {
-                    // MessageBox.Show(ex.Message);
-                    //  MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
-                    // await dialog.ShowAsync();
+                   // MessageBox.Show(ex.Message);
+                      MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
+                     await dialog.ShowAsync();
                 }
                 finally
                 {
                     if (CommonData.MyCon.MyCon != null)
                         CommonData.MyCon.closeConnection();
-                }
-
+                CommonData.MyCon.MyCon.Dispose();
+                myReader.Dispose();
+                GC.Collect();
             }
-            async public Task fill_table() {
+
+        }
+            public void fill_table() {
               //  SqlCommand myCommand = new SqlCommand();
                // SqlDataReader myReader = null;
           //  DbCommand myCommand = new SqlCommand();
@@ -1072,8 +1088,8 @@ namespace CSharp1
                             {
                            
                             String thestring = "@Channel" + x;
-                            var parameter = myCommand.CreateParameter();
-                            parameter.ParameterName = "@SomeName";
+                        //    var parameter = myCommand.CreateParameter();
+                          //  parameter.ParameterName = thestring;
                             //query.bindValue(thestring, room[x]->thepattern.vec_bs[i]);
 
                             // myCommand.Parameters.Add(thestring, SqlDbType.TinyInt).Value = room[x].thepattern.vec_bs[i];
@@ -1118,15 +1134,19 @@ namespace CSharp1
                                 for (int y = 0; y < numchannels; y++)
                                 {
                                     String thestring = "@Volume" + y;
-                                    myCommand.Parameters.Add(thestring, SqlDbType.TinyInt).Value = room[y].thepattern.int_vs[x];
+                                    myCommand.AddParameter(thestring, room[y].thepattern.int_vs[x]);
+                             //   myCommand.Parameters.Add(thestring, SqlDbType.TinyInt).Value = room[y].thepattern.int_vs[x];
                                     thestring = "@Bank" + y;
-                                    myCommand.Parameters.Add(thestring, SqlDbType.TinyInt).Value = room[y].thepattern.int_bnk[x];
+                                myCommand.AddParameter(thestring, room[y].thepattern.int_bnk[x]);
+                               // myCommand.Parameters.Add(thestring, SqlDbType.TinyInt).Value = room[y].thepattern.int_bnk[x];
                                     thestring = "@Prg" + y;
-                                    myCommand.Parameters.Add(thestring, SqlDbType.TinyInt).Value = room[y].thepattern.int_prg[x];
+                                myCommand.AddParameter(thestring, room[y].thepattern.int_prg[x]);
+                               // myCommand.Parameters.Add(thestring, SqlDbType.TinyInt).Value = room[y].thepattern.int_prg[x];
                                 }
-                                myCommand.Parameters.Add("@id", SqlDbType.Int).Value = (x);
-                                //myReader = myCommand.ExecuteReader();
-                                myCommand.ExecuteNonQuery();
+                                //myCommand.Parameters.Add("@id", SqlDbType.Int).Value = (x);
+                            myCommand.AddParameter("@id", (x));
+                            //myReader = myCommand.ExecuteReader();
+                            myCommand.ExecuteNonQuery();
                             }
                             CommonData.MyCon.closeConnection();
                         }
@@ -1194,6 +1214,7 @@ namespace CSharp1
                     {
                         if (CommonData.MyCon.MyCon != null)
                             CommonData.MyCon.closeConnection();
+                    myReader.Close();
                     }
                 }
                 {
@@ -1215,9 +1236,10 @@ namespace CSharp1
                         for (int i = 0; i < numchannels; i++)
                         {
                             myCommand.Parameters.Clear();
-                            myCommand.Parameters.Add("@id", SqlDbType.Int).Value = i;
-                            //  query.bindValue(":rowid", (i + 1));
-                            myReader = myCommand.ExecuteReader();
+                           // myCommand.Parameters.Add("@id", SqlDbType.Int).Value = i;
+                        myCommand.AddParameter("@id", i);
+                        //  query.bindValue(":rowid", (i + 1));
+                        myReader = myCommand.ExecuteReader();
 
                             while (myReader.Read())
                             {
@@ -1267,8 +1289,17 @@ namespace CSharp1
                     // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
                     myCommand.Connection = CommonData.MyCon.MyCon;
                     myCommand.CommandType = CommandType.Text;
+                //    myCommand.CommandText = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = '" + CommonData.Database + "'"; //GET TABLES IN DATABASE
+
+                if (CommonData.theconnection == 1)
+                {
                     myCommand.CommandText = " SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = '" + CommonData.Database + "'"; //GET TABLES IN DATABASE
-                    CommonData.MyCon.openConnectionAsync();
+                }
+                else
+                {
+                    myCommand.CommandText = "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%';"; //GET TABLES IN  SQLITE DATABASE
+                }
+                CommonData.MyCon.openConnectionAsync();
                     myReader = myCommand.ExecuteReader();
                     // if (CommonData.thesongs.Count() > 0) CommonData.thesongs.Clear();    //Clear the songs list to fill it again
                     while (myReader.Read())
@@ -1278,25 +1309,29 @@ namespace CSharp1
                         // CommonData.setTheSongs(myReader[0].ToString());
                         if (CommonData.Mytablename == myReader[0].ToString()) { tableexisted = true; }
                     }
-                    Console.WriteLine("HOHO" + myReader[0].ToString());
+                   // Console.WriteLine("HOHO" + myReader[0].ToString());
                     //Console.WriteLine(myReader[0].ToString() + "" + myReader[1].ToString());                       
                 }
                 catch (Exception ex)
                 {
-                    // MessageBox.Show(ex.Message);
-                    //  MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
-                    // await dialog.ShowAsync();
+                   //  MessageBox.Show(ex.Message);
+                      MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
+                     await dialog.ShowAsync();
                 }
                 finally
                 {
                     if (CommonData.MyCon.MyCon != null)
                         CommonData.MyCon.closeConnection();
-                }
+                //CommonData.MyCon.MyCon.Dispose();
+                //myReader.Dispose();
+                //GC.Collect();
+            }
                 if (!tableexisted)
                 {
                     try
                     {
-                        myCommand.Connection = CommonData.MyCon.MyCon;
+                    CommonData.SetConnection();
+                    myCommand.Connection = CommonData.MyCon.MyCon;
                         myCommand.CommandType = CommandType.Text;
                         myCommand.CommandText = "CREATE TABLE " + CommonData.Mytablename + " (id INTEGER , " + CommonData.theColumms + ")"; //GET TABLES IN DATABASE
                         CommonData.MyCon.openConnectionAsync();
@@ -1305,8 +1340,8 @@ namespace CSharp1
                     catch (Exception ex)
                     {
                         // MessageBox.Show(ex.Message);
-                        //  MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
-                        // await dialog.ShowAsync();
+                          MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
+                         await dialog.ShowAsync();
                     }
                     finally
                     {
@@ -1317,11 +1352,12 @@ namespace CSharp1
 
 
                     {
-                        try
+               
+                    try
                         {
-                            //SqlCommand mycommand = new SqlCommand();
-                     //   IDbCommand myCommand = new SqlCommand();
-                        IDataReader myReader = null;
+                        //SqlCommand mycommand = new SqlCommand();
+                        //   IDbCommand myCommand = new SqlCommand();
+                        CommonData.SetConnection();
                         myCommand.Connection = CommonData.MyCon.MyCon;
                             myCommand.CommandType = CommandType.Text;
                             myCommand.CommandText = "INSERT INTO " + CommonData.Mytablename + "(id)" + " VALUES (@id)";
@@ -1332,12 +1368,13 @@ namespace CSharp1
                                 myCommand.Parameters.Clear();
                                 //Debug.WriteLine("INSERT INTO" + i);
                                 //myCommand.Parameters.AddWithValue("parentId", 1);
-                                myCommand.Parameters.Add("@id", SqlDbType.Int).Value = i;
-                                // myCommand.Parameters.AddWithValue("id", i);
+                              //  myCommand.Parameters.Add("@id", SqlDbType.Int).Value = i;
+                            myCommand.AddParameter("@id", i);
+                            // myCommand.Parameters.AddWithValue("id", i);
 
 
-                                //myReader = myCommand.ExecuteReader();
-                                myCommand.ExecuteNonQuery();
+                            //myReader = myCommand.ExecuteReader();
+                            myCommand.ExecuteNonQuery();
 
                             }
                             CommonData.MyCon.closeConnection();

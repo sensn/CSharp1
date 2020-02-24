@@ -29,12 +29,15 @@ namespace CSharp1
         public static string Database { get; internal set; }
         public static string Datasource { get; internal set; }
 
+        public static int theconnection = 1; //0 Local 1 Remote, 
+
         public static void setTheSongs(String thesong)
         {
             thesongs.Add(thesong);
         }
-        public static void SetConnection()
+        public static async Task SetConnection()
         {
+            
             MyCon = new DBConnection();
             MyCon.setConnectionString();
             MyCon.establishConnectionAsync();

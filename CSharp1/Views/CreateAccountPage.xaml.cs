@@ -24,100 +24,119 @@ namespace CSharp1.Views
         private bool dbexisted = false;
         String username = "";
         String password = "";
+        List<string> thelist = new List<string>();
+        private static IDbCommand myCommand = null;
+        public static IDbCommand MyCommand { get => myCommand; set => myCommand = value; }
         public CreateAccountPage()
         {
             this.InitializeComponent();
         }
         private async void btn_username_Click(object sender, RoutedEventArgs e)
         {
-            CommonData.Database = "myDBSeqAccounts";
-            CommonData.SetConnection();   //CONNECT TO MS SQL SERVER
-            List<string> thelist = GetDatabaseList();     //// GET ALL DATABASES ON SERVER
-            username = txtbox_username.Text;
-            password = pwdbox_username.Password;
-            bool pass = false;
-            Debug.WriteLine(username);
-            //DBConnection myCon = new DBConnection();
-            //myCon.establishConnection();
-            //CommonData.SetConnection();  // Connect TO SERVER   
-            SqlCommand myCommand = new SqlCommand();
-            SqlDataReader myReader = null;
-            try
+            if (CommonData.theconnection == 0)
             {
-                //Commandtype --> Stored Procedure + Name der Prozedur angeben
-                myCommand.Connection = CommonData.MyCon.MyCon;
-                //  myCommand.CommandType = CommandType.StoredProcedure;
-                //   myCommand.CommandText = "dbo.getuseraccounts";   //name of stored Procedure
-                myCommand.CommandType = CommandType.Text;
-                myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
-                // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
-                // myCommand.CommandType = CommandType.Text;
-                //  myCommand.CommandText = "SELECT * FROM USERData";
-                //Falls nötig Parameter hinzufuegen
-                //  myCommand.Parameters.Add("@Username", SqlDbType.VarChar).Direction = ParameterDirection.Output;
-                // myCommand.Parameters.Add("@Passw", SqlDbType.VarChar).Direction = ParameterDirection.Output;
-                //Parameter hinzufuegen!!
+                MessageDialog dialog = new MessageDialog("FAIL!", "Login functionality not availabe with Local Database! Please switch to \"Remote DB \" in the settings page!");
+                await dialog.ShowAsync();
+            }
+            else
+            {
 
-                CommonData.MyCon.openConnectionAsync();
-                //ExecuteNonQuery --> fuehrt unsere Prozedur aus
-                // myCommand.ExecuteNonQuery();
-                myReader = myCommand.ExecuteReader();
-
-                //Zeile für Zeile wird in ein Listviewitem geschrieben und ausgegeben
-                while (myReader.Read() && pass == false)
+                CommonData.Database = "myDBSeqAccounts";
+                CommonData.SetConnection();   //CONNECT TO MS SQL SERVER
+                                              //Debug.WriteLine("CON: " + CommonData.MyCon.MyCon);
+                                              //Debug.WriteLine("CONS: " + CommonData.MyCon.MyCon.State);
+                                              //Debug.WriteLine("CONSD: " + CommonData.Database);
+                                              // CommonData.MyCon.openConnectionAsync();
+                Debug.WriteLine("CONS123: " + CommonData.MyCon.MyCon.State);
+                thelist = GetDatabaseList();     //// GET ALL DATABASES ON SERVER
+                username = txtbox_username.Text;
+                password = pwdbox_username.Password;
+                bool pass = false;
+                Debug.WriteLine(username);
+                //DBConnection myCon = new DBConnection();
+                //myCon.establishConnection();
+                //CommonData.SetConnection();  // Connect TO SERVER   
+                // SqlCommand myCommand = new SqlCommand();
+                // SqlDataReader myReader = null;
+                IDataReader myReader = null;
+                try
                 {
-                    //ListViewItem item = new ListViewItem(myReader[1].ToString());
-                    // item.SubItems.Add(myReader[2].ToString());
-                    // item.SubItems.Add(myReader[3].ToString());
+                    //Commandtype --> Stored Procedure + Name der Prozedur angeben
+                    myCommand.Connection = CommonData.MyCon.MyCon;
+                    //  myCommand.CommandType = CommandType.StoredProcedure;
+                    //   myCommand.CommandText = "dbo.getuseraccounts";   //name of stored Procedure
+                    myCommand.CommandType = CommandType.Text;
+                    myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
+                    // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
+                    // myCommand.CommandType = CommandType.Text;
+                    //  myCommand.CommandText = "SELECT * FROM USERData";
+                    //Falls nötig Parameter hinzufuegen
+                    //  myCommand.Parameters.Add("@Username", SqlDbType.VarChar).Direction = ParameterDirection.Output;
+                    // myCommand.Parameters.Add("@Passw", SqlDbType.VarChar).Direction = ParameterDirection.Output;
+                    //Parameter hinzufuegen!!
 
-                    //this.listView_person.Items.Add(item);
-                    Console.WriteLine(myReader[0].ToString() + "" + myReader[1].ToString());
-                    if (username == myReader[0].ToString())    //USERNAME already Existes?
+                    CommonData.MyCon.openConnectionAsync();
+                    //ExecuteNonQuery --> fuehrt unsere Prozedur aus
+                    // myCommand.ExecuteNonQuery();
+                    myReader = myCommand.ExecuteReader();
+
+                    //Zeile für Zeile wird in ein Listviewitem geschrieben und ausgegeben
+                    while (myReader.Read() && pass == false)
                     {
-                        pass = true;
-                       // MessageDialog dialog = new MessageDialog("LOGIN!", "LOGIN OK ");
-                      //  await dialog.ShowAsync();
+                        //ListViewItem item = new ListViewItem(myReader[1].ToString());
+                        // item.SubItems.Add(myReader[2].ToString());
+                        // item.SubItems.Add(myReader[3].ToString());
 
-                       
+                        //this.listView_person.Items.Add(item);
+                        Console.WriteLine(myReader[0].ToString() + "" + myReader[1].ToString());
+                        if (username == myReader[0].ToString())    //USERNAME already Existes?
+                        {
+                            pass = true;
+                            // MessageDialog dialog = new MessageDialog("LOGIN!", "LOGIN OK ");
+                            //  await dialog.ShowAsync();
+
+
+                        }
+                    }
+                    //  string uname = Convert.ToString(myCommand.Parameters["@Username"].Value);
+                    // string passw = Convert.ToString(myCommand.Parameters["@Passw"].Value);
+                }
+                catch (Exception ex)
+                {
+                    // MessageBox.Show(ex.Message);
+                    MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
+                    await dialog.ShowAsync();
+                }
+                finally
+                {
+                    if (CommonData.MyCon.MyCon != null)
+                        CommonData.MyCon.closeConnection();
+                }
+                //Debug.WriteLine(GetDatabaseList());
+                ////
+                if (pass)
+                {
+                    MessageDialog dialog = new MessageDialog("User already exists! Choose a different username!");
+                    await dialog.ShowAsync();
+                }
+                if (!pass && username != "")
+                {
+                    {
+                        create_dbAsync(username);
+                        CommonData.Database = username;
+                        CommonData.MyCon.setConnectionString();
+                        CommonData.MyCon.establishConnectionAsync();
+                        MessageDialog dialog = new MessageDialog("Please Login!", "User Account created! Hello " + username + "!");
+                        await dialog.ShowAsync();
+                        Frame navigationFrame = this.Frame as Frame;
+                        navigationFrame.Navigate(typeof(ShopPage));
+                        Frame appFrame = Window.Current.Content as Frame;
+                        MainPage mainPage = appFrame.Content as MainPage;
+                        mainPage.SetSelectedNavigationItem(1);
                     }
                 }
-                //  string uname = Convert.ToString(myCommand.Parameters["@Username"].Value);
-                // string passw = Convert.ToString(myCommand.Parameters["@Passw"].Value);
-            }
-            catch (Exception ex)
-            {
-                // MessageBox.Show(ex.Message);
-                MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
-                await dialog.ShowAsync();
-            }
-            finally
-            {
-                if (CommonData.MyCon.MyCon != null)
-                    CommonData.MyCon.closeConnection();
-            }
-            //Debug.WriteLine(GetDatabaseList());
-            ////
-            if (pass)
-            {
-                MessageDialog dialog = new MessageDialog("User already exists! Choose a different username!");
-                await dialog.ShowAsync();
-            }
-            if (!pass && username != "")
-            {
-                {
-                    create_dbAsync(username);
-                    CommonData.Database = username;
-                    CommonData.MyCon.setConnectionString();
-                    CommonData.MyCon.establishConnectionAsync();
-                    MessageDialog dialog = new MessageDialog("Please Login!", "User Account created! Hello " + username + "!");
-                    await dialog.ShowAsync();
-                    Frame navigationFrame = this.Frame as Frame;
-                    navigationFrame.Navigate(typeof(ShopPage));
-                    Frame appFrame = Window.Current.Content as Frame;
-                    MainPage mainPage = appFrame.Content as MainPage;
-                    mainPage.SetSelectedNavigationItem(1);
-                }
-            }
+
+            }//else1
         }
        private async void CreateAccountLinkButton_Click(object sender, RoutedEventArgs e)
         {
@@ -129,7 +148,7 @@ namespace CSharp1.Views
         }
        private async System.Threading.Tasks.Task create_dbAsync(string username)
         {
-             SqlCommand myCommand = new SqlCommand();
+            // SqlCommand myCommand = new SqlCommand();
             // SqlDataReader myReader = null;
             try
             {
@@ -146,8 +165,10 @@ namespace CSharp1.Views
                 CommonData.MyCon.openConnectionAsync();
 
                 myCommand.Parameters.Clear();
-                myCommand.Parameters.Add("@Username", SqlDbType.NVarChar).Value = username;
-                myCommand.Parameters.Add("@Passw", SqlDbType.NVarChar).Value = password;
+              //  myCommand.Parameters.Add("@Username", SqlDbType.NVarChar).Value = username;
+                myCommand.AddParameter("@Username", username);
+              //  myCommand.Parameters.Add("@Passw", SqlDbType.NVarChar).Value = password;
+                myCommand.AddParameter("@Passw", password);
                 //myReader = myCommand.ExecuteReader();
                 myCommand.ExecuteNonQuery();
                 // CommonData.MyCon.closeConnection();
@@ -169,24 +190,20 @@ namespace CSharp1.Views
         {
             List<string> list = new List<string>();
 
-            SqlCommand myCommand = new SqlCommand();
-            SqlDataReader myReader = null;
-
+            //SqlCommand myCommand = new SqlCommand();
+            // SqlDataReader myReader = null;
+            // IDbCommand myCommand = new SqlCommand();
+            //Debug.WriteLine("CON: " + CommonData.MyCon.MyCon);
+            //Debug.WriteLine("CONS: " + CommonData.MyCon.MyCon.State);
+            //Debug.WriteLine("CONSD: " + CommonData.Database);
+            
+           // IDataReader myReader = null;
             bool tableexisted = false;
-
-            //Commandtype --> Stored Procedure + Name der Prozedur angeben
-            //  myCommand.CommandText = "SELECT * FROM [myDBSeqAccounts].[dbo].[USERData]";
-            // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
+          
             myCommand.Connection = CommonData.MyCon.MyCon;
             myCommand.CommandType = CommandType.Text;
             myCommand.CommandText = "SELECT name from sys.databases"; //GET TABLES IN DATABASE
             CommonData.MyCon.openConnectionAsync();
-            //  myReader = myCommand.ExecuteReader();
-
-
-            // Set up a command with the given query and associate
-            // this with the current connection.
-
             {
                 using (IDataReader dr = myCommand.ExecuteReader())
                 {
@@ -195,13 +212,10 @@ namespace CSharp1.Views
                         list.Add(dr[0].ToString());
                     }
                 }
-
             }
-
             if (CommonData.MyCon.MyCon != null)
                 CommonData.MyCon.closeConnection();
             return list;
-
         }
     }
 }

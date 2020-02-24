@@ -31,14 +31,47 @@ namespace CSharp1.Views
         private bool AccDbExisted;
         private IEnumerable<object> theDBlist;
 
+        private static IDbCommand myCommand = null;
+        public static IDbCommand MyCommand { get => myCommand; set => myCommand = value; }
+
         public SettingsPage()
         {
             this.InitializeComponent();
+            tgl_dbmode.IsOn = CommonData.theconnection != 0;
         }
+
+        private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            ToggleSwitch toggleSwitch = sender as ToggleSwitch;
+            if (toggleSwitch != null)
+            {
+                if (toggleSwitch.IsOn == true)
+                {
+                    CommonData.theconnection = 1;  //RO
+                   // progress1.IsActive = true;
+                    //progress1.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    CommonData.theconnection = 0;
+                    //progress1.IsActive = false;
+                    //progress1.Visibility = Visibility.Collapsed;
+                }
+            }
+        }
+
 
         private async void btn_connectToSQLServer_Click(object sender, RoutedEventArgs e)
         {
-            if (txtbox_servername.Text != "")
+            if (CommonData.theconnection == 0)
+            {
+                MessageDialog dialog = new MessageDialog("FAIL!", "Login functionality not availabe with Local Database! Please switch to \"Remote DB \" in the settings page!");
+                await dialog.ShowAsync();
+            }
+            else
+            {
+
+                if (txtbox_servername.Text != "")
             {
 
                 CommonData.MyCon.MyCon.Close();
@@ -90,76 +123,81 @@ namespace CSharp1.Views
                 CommonData.SetConnection();   //CONNECT TO MS SQL SERVER
 
             }
+
+            }//else1
         }
         private async Task create_dbTableAsync()
-        {
-            SqlCommand myCommand = new SqlCommand();
-            SqlDataReader myReader = null;
-
-            bool tableexisted = false;
-            try
             {
-                CommonData.SetConnection();
-                // Debug.WriteLine("DATABASE C: " + CommonData.Database);
-                //Commandtype --> Stored Procedure + Name der Prozedur angeben
-                //  myCommand.CommandText = "SELECT * FROM [DefaultSeqDb].[dbo].[USERData]";
-                // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
-                myCommand.Connection = CommonData.MyCon.MyCon;
-                myCommand.CommandType = CommandType.Text;
-                myCommand.CommandText = " SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = '" + CommonData.Database + "'"; //GET TABLES IN DATABASE
-                CommonData.MyCon.openConnectionAsync();
-                myReader = myCommand.ExecuteReader();
-                // if (CommonData.thesongs.Count() > 0) CommonData.thesongs.Clear();    //Clear the songs list to fill it again
-                while (myReader.Read())
-                {
-                    Debug.WriteLine("HOHO" + myReader[0].ToString());
-
-                    // CommonData.setTheSongs(myReader[0].ToString());
-                    if (CommonData.Mytablename == myReader[0].ToString()) { tableexisted = true; }
-                }
-                Console.WriteLine("HOHO" + myReader[0].ToString());
-                //Console.WriteLine(myReader[0].ToString() + "" + myReader[1].ToString());                       
-            }
-            catch (Exception ex)
-            {
-                // MessageBox.Show(ex.Message);
-                //  MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
-                // await dialog.ShowAsync();
-            }
-            finally
-            {
-                if (CommonData.MyCon.MyCon != null)
-                    CommonData.MyCon.closeConnection();
-            }
-            if (!tableexisted)
-            {
+                // SqlCommand myCommand = new SqlCommand();
+                // SqlDataReader myReader = null;
+                IDataReader myReader = null;
+                bool tableexisted = false;
                 try
                 {
+                    CommonData.SetConnection();
+                    // Debug.WriteLine("DATABASE C: " + CommonData.Database);
+                    //Commandtype --> Stored Procedure + Name der Prozedur angeben
+                    //  myCommand.CommandText = "SELECT * FROM [DefaultSeqDb].[dbo].[USERData]";
+                    // myCommand.CommandText = "SELECT Username=Username, Passw=Passw FROM USERAccounts";
                     myCommand.Connection = CommonData.MyCon.MyCon;
                     myCommand.CommandType = CommandType.Text;
-                    myCommand.CommandText = "CREATE TABLE " + "USERAccounts" + " (id INTEGER , Username varchar(50),Passw VARCHAR(50))"; //GET TABLES IN DATABASE
-                    //myCommand.CommandText = "CREATE TABLE " + CommonData.Mytablename + " (id INTEGER , " + CommonData.theColumms + ")"; //GET TABLES IN DATABASE
+                    myCommand.CommandText = " SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG = '" + CommonData.Database + "'"; //GET TABLES IN DATABASE
                     CommonData.MyCon.openConnectionAsync();
                     myReader = myCommand.ExecuteReader();
+                    // if (CommonData.thesongs.Count() > 0) CommonData.thesongs.Clear();    //Clear the songs list to fill it again
+                    while (myReader.Read())
+                    {
+                        Debug.WriteLine("HOHO" + myReader[0].ToString());
+
+                        // CommonData.setTheSongs(myReader[0].ToString());
+                        if (CommonData.Mytablename == myReader[0].ToString()) { tableexisted = true; }
+                    }
+                    Console.WriteLine("HOHO" + myReader[0].ToString());
+                    //Console.WriteLine(myReader[0].ToString() + "" + myReader[1].ToString());                       
                 }
                 catch (Exception ex)
                 {
                     // MessageBox.Show(ex.Message);
-                    MessageDialog dialog = new MessageDialog("FAIL Table!!", "Information " + ex.Message);
-                    await dialog.ShowAsync();
+                    //  MessageDialog dialog = new MessageDialog("FAIL!!", "Information " + ex.Message);
+                    // await dialog.ShowAsync();
                 }
                 finally
                 {
                     if (CommonData.MyCon.MyCon != null)
                         CommonData.MyCon.closeConnection();
                 }
-            }
+                if (!tableexisted)
+                {
+                    try
+                    {
+                        myCommand.Connection = CommonData.MyCon.MyCon;
+                        myCommand.CommandType = CommandType.Text;
+                        myCommand.CommandText = "CREATE TABLE " + "USERAccounts" + " (id INTEGER , Username varchar(50),Passw VARCHAR(50))"; //GET TABLES IN DATABASE
+                                                                                                                                             //myCommand.CommandText = "CREATE TABLE " + CommonData.Mytablename + " (id INTEGER , " + CommonData.theColumms + ")"; //GET TABLES IN DATABASE
+                        CommonData.MyCon.openConnectionAsync();
+                        myReader = myCommand.ExecuteReader();
+                    }
+                    catch (Exception ex)
+                    {
+                        // MessageBox.Show(ex.Message);
+                        MessageDialog dialog = new MessageDialog("FAIL Table!!", "Information " + ex.Message);
+                        await dialog.ShowAsync();
+                    }
+                    finally
+                    {
+                        if (CommonData.MyCon.MyCon != null)
+                            CommonData.MyCon.closeConnection();
+                    }
+                }
+
+         
         }
 
         private async System.Threading.Tasks.Task create_dbAsync(string username)
         {
-            SqlCommand myCommand = new SqlCommand();
+            // SqlCommand myCommand = new SqlCommand();
             // SqlDataReader myReader = null;
+            IDataReader myReader = null;
             try
             {
                 myCommand.Connection = CommonData.MyCon.MyCon;
@@ -184,8 +222,9 @@ namespace CSharp1.Views
         {
             List<string> list = new List<string>();
 
-            SqlCommand myCommand = new SqlCommand();
-            SqlDataReader myReader = null;
+           // SqlCommand myCommand = new SqlCommand();
+           // SqlDataReader myReader = null;
+            IDataReader myReader = null;
 
             bool tableexisted = false;
             myCommand.Connection = CommonData.MyCon.MyCon;
@@ -208,6 +247,5 @@ namespace CSharp1.Views
             CommonData.MyCon.closeConnection();
             return list;
         }
-
     }
 } 
