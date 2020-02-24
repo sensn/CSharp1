@@ -62,7 +62,7 @@ namespace CSharp1.Views
 
     private async System.Threading.Tasks.Task delete_tableAsync(string thetablename)
     {
-
+          
        // SqlCommand myCommand = new SqlCommand();
        // SqlDataReader myReader = null;
             IDataReader myReader = null;

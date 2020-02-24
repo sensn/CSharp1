@@ -20,6 +20,8 @@ namespace CSharp1
        public static String theColummsUpd = "";
        public static String theColummsUpdSingle = "";
        public static String theColummsSingleRaw = "";
+        public static String theColummsUpdMute = "";
+       public static String theColummsSingleMute = "";
        private static String mytablename = "";
        public static int numchannels = 10;
 
@@ -64,6 +66,15 @@ namespace CSharp1
                     theColummsUpd += ",";
                 }
             }
+
+            for (int i = 0; i < numchannels; i++)
+            {
+                theColumms += "Mute" + i + " TINYINT ,";
+                theColummsRaw += "Mute" + i + ", ";
+                theColummsVal += "@Mute" + i + ", ";
+                // theColummsUpd += "Mute" + i + "=" + "@Mute" + i + ", ";
+            }
+
             for (int i = 0; i < numchannels; i++)
             {
                 theColumms += "Volume" + i + " TINYINT ,";
@@ -78,6 +89,8 @@ namespace CSharp1
                 theColummsVal += "@Bank" + i + ", ";
                // theColummsUpd += "Bank" + i + "=" + "@Bank" + i + ", ";
             }
+
+          
 
             for (int i = 0; i < numchannels; i++)
             {
@@ -127,6 +140,25 @@ namespace CSharp1
                     theColummsSingleRaw += ",";
                     //                  theColummsVal+= ",";
                     theColummsUpdSingle += ",";
+                }
+            }
+
+
+            theColummsSingleMute = "";
+            theColummsUpdMute = "";
+            for (int i = 0; i < numchannels; i++)
+            {
+                //         theColumms+= "Prg" + i + " TINYINT ";
+                theColummsSingleMute += "Mute" + i + " ";
+                //         theColummsVal+= "@Prg" + i + " ";
+                theColummsUpdMute += "Mute" + i + "=" + "@Mute" + i + " ";
+
+                if (i != numchannels - 1)
+                {
+                    //                  theColumms+=  ",";
+                    theColummsSingleMute += ",";
+                    //                  theColummsVal+= ",";
+                    theColummsUpdMute += ",";
                 }
             }
             //*****
